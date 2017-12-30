@@ -1,0 +1,11 @@
+# ignore the `local/` directory
+local/
+
+# ignore python notebook checkpoint files
+.ipynb_checkpoints/
+
+# ignore mac-os directory/file stuff
+.DS_Store
+ 
+
+
