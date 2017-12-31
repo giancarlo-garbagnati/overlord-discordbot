@@ -56,11 +56,15 @@ async def echo(*, message: str):
     print('Echoing: "', message + '"')
     await client.say(message)
 
-@client.command()
-async def msg(*, input_message: str):
+#async def msg(ctx, *, input_message: str):
+#async def msg(ctx, *, input_message: str):
+@client.command(pass_context=True)
+async def msg(ctx, team_to: str, input_message: str):
     """ Sends a message to another team's private channel """
-    to_i = input_message.find(' ')
-    to = input_message[0:to_i].title()
+    #to_i = input_message.find(' ')
+    #to = input_message[0:to_i].title()
+
+    to = team_to
     fro = "PLACEHOLDER"
     fro = "USA"
     fro = fro.title()
@@ -72,11 +76,15 @@ async def msg(*, input_message: str):
 
     print("To: " + to)
     print("From: " + fro)
-    print('to_i:', to_i)
+    #print("to_i: " + to_i)
+    print('Input message: ' + input_message)
+
+    print(type(ctx))
 
     #Error Checking
     if to_i < 1:
-        not_valid_msg_format = 'Not a valid message. The correct format is "!msg COUNTRY MESSAGE".'
+        not_valid_msg_format = 'Not a valid message. The correct format is "'
+        not_valid_msg_format += command_prefix + 'msg COUNTRY MESSAGE".'
         await client.say(not_valid_msg_format)
         return
     if to.lower() not in team_list:
@@ -88,7 +96,8 @@ async def msg(*, input_message: str):
         await client.say(same_team_error_msg)
         return
 
-    message = input_message[to_i+1:].strip()
+    #message = input_message[to_i+1:].strip()
+	message = input_message
     #message = ' '.join(message.split())
 
     #print(input_message)
@@ -96,6 +105,8 @@ async def msg(*, input_message: str):
     #print(message)
     #print("Team", fro, 'sending message:', '\n"' + message + '"', '\nto team', to + '.')
     print("Team", fro, 'sending message:', '"' + message + '"', 'to team', to + '.')
+
+    await client.send_message(discord.Object(id='12324234183172'), 'message')
 
     confirmation_message = 'Message "' + message + '" sent to team ' + to + '.'
     await client.say(confirmation_message)
