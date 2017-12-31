@@ -1,0 +1,111 @@
+# imports
+import discord
+import asyncio
+from discord.ext.commands import Bot
+from discord.ext import commands
+import platform
+
+# main server, and list of channles
+discord_server = discord.Client()
+server_list = []
+
+# Countries and teams in the game (names of servers)
+team_list = ['usa','egypt']
+
+# Creating the bot client
+command_prefix = '-'
+bot_description = "Overlord Bot for Watch The Skies"
+client = Bot(description=bot_description, command_prefix=command_prefix, pm_help = True)
+
+###################################################################################################
+
+# This is what happens everytime the bot launches. In this case, it prints information like server
+# count, user count the bot is connected to, and the bot id in the console.
+# Do not mess with it because the bot can break, if you wish to do so, please consult me or someone
+# trusted.
+@client.event
+async def on_ready():
+    print('Logged in as ' + client.user.name + ' (ID:' + client.user.id + ') | Connected to ' +
+	      str(len(client.servers)) + ' servers | Connected to ' +
+	      str(len(set(client.get_all_members()))) + ' users')
+    print('--------')
+    print('Current Discord.py Version: {} | Current Python Version: {}'.format(discord.__version__,
+	      platform.python_version()))
+    print('--------')
+    print('Use this link to invite {}:'.format(client.user.name))
+    print('https://discordapp.com/oauth2/authorize?client_id={}&scope=bot&permissions=8'.
+          format(client.user.id))
+    print('--------')
+    #server_list = discord_server.server_list
+    for server in server_list:
+        print(server)
+
+# This is a basic example of a call and response command. You tell it do "this" and it does it.
+@client.command()
+async def ping(*args):
+    """ Just a ping command for the Overlord """
+    pinguser = "User"
+    print("User " + pinguser + " is pinging the Overlord.")
+    await client.say(":ping_pong: Pong!")
+    #await asyncio.sleep(3)
+
+@client.command()
+async def echo(*, message: str):
+    """ Has the Overlord echo a string """
+    #await print(message)
+    print('Echoing: "', message + '"')
+    await client.say(message)
+
+@client.command()
+async def msg(*, input_message: str):
+    """ Sends a message to another team's private channel """
+    to_i = input_message.find(' ')
+    to = input_message[0:to_i].title()
+    fro = "PLACEHOLDER"
+    fro = "USA"
+    fro = fro.title()
+
+    if to.lower() == 'usa':
+        to = to.upper()
+    if fro.lower() == 'usa':
+        fro = fro.upper()
+
+    print("To: " + to)
+    print("From: " + fro)
+    print('to_i:', to_i)
+
+    #Error Checking
+    if to_i < 1:
+        not_valid_msg_format = 'Not a valid message. The correct format is "!msg COUNTRY MESSAGE".'
+        await client.say(not_valid_msg_format)
+        return
+    if to.lower() not in team_list:
+        not_team_error_msg = '"' + to + '"' + ' not a valid team. Try again.'
+        await client.say(not_team_error_msg)
+        return
+    if to == fro:
+        same_team_error_msg = "You don't need me to send a message to yourself."
+        await client.say(same_team_error_msg)
+        return
+
+    message = input_message[to_i+1:].strip()
+    #message = ' '.join(message.split())
+
+    #print(input_message)
+    #print(to)
+    #print(message)
+    #print("Team", fro, 'sending message:', '\n"' + message + '"', '\nto team', to + '.')
+    print("Team", fro, 'sending message:', '"' + message + '"', 'to team', to + '.')
+
+    confirmation_message = 'Message "' + message + '" sent to team ' + to + '.'
+    await client.say(confirmation_message)
+    #await client.say(message)
+
+# Get key info
+login_path = "local/botkey"
+login_file = open(login_path, 'r')
+login_lines = login_file.readlines()
+login_lines = [line.replace('\n','') for line in login_lines]
+botkey = login_lines[0]
+client.run(botkey)
+
