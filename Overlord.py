@@ -7,6 +7,11 @@ import platform
 
 # main server, and list of channles
 discord_server = discord.Client()
+
+print("Let's go.")
+for s in discord_server.servers:
+	print(s)
+
 server_list = []
 
 # Countries and teams in the game (names of servers)
@@ -82,6 +87,7 @@ async def msg(ctx, team_to: str, input_message: str):
     print(type(ctx))
 
     #Error Checking
+    to_i = 10
     if to_i < 1:
         not_valid_msg_format = 'Not a valid message. The correct format is "'
         not_valid_msg_format += command_prefix + 'msg COUNTRY MESSAGE".'
@@ -97,7 +103,7 @@ async def msg(ctx, team_to: str, input_message: str):
         return
 
     #message = input_message[to_i+1:].strip()
-	message = input_message
+    message = input_message
     #message = ' '.join(message.split())
 
     #print(input_message)
