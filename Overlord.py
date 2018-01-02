@@ -6,13 +6,7 @@ from discord.ext import commands
 import platform
 
 # main server, and list of channles
-discord_server = discord.Client()
-
-print("Let's go.")
-for s in discord_server.servers:
-	print(s)
-
-server_list = []
+#discord_server = discord.Client()
 
 # Countries and teams in the game (names of servers)
 team_list = ['usa','egypt']
@@ -42,8 +36,17 @@ async def on_ready():
           format(client.user.id))
     print('--------')
     #server_list = discord_server.server_list
-    for server in server_list:
+    servers = client.servers
+    for server in servers:
+        print("##########")
         print(server)
+        #print(server.members)
+        for member in server.members:
+            print(member.name)
+        #print(server.channels)
+        for channel in server.channels:
+            print(channel.name)
+    print("##########")
 
 # This is a basic example of a call and response command. You tell it do "this" and it does it.
 @client.command()
@@ -61,13 +64,26 @@ async def echo(*, message: str):
     print('Echoing: "', message + '"')
     await client.say(message)
 
+#async def msg(*, input_message: str):
 #async def msg(ctx, *, input_message: str):
-#async def msg(ctx, *, input_message: str):
+#async def msg(ctx, team_to: str, input_message: str):
+#async def msg(team_to: str, input_message: discord.message):
+#async def msg(ctx, team_to: str, input_message: str):
 @client.command(pass_context=True)
-async def msg(ctx, team_to: str, input_message: str):
+async def msg(ctx, *, input_message: str):
     """ Sends a message to another team's private channel """
-    #to_i = input_message.find(' ')
-    #to = input_message[0:to_i].title()
+
+    to_i = input_message.find(' ')
+    to = input_message[0:to_i].title()
+
+    #to_msg = input_message[to_i+1:].strip()
+
+    #print(to_msg)
+
+    team_to = "Egypt"
+
+    print(type(input_message))
+    print(input_message)
 
     to = team_to
     fro = "PLACEHOLDER"
@@ -81,7 +97,7 @@ async def msg(ctx, team_to: str, input_message: str):
 
     print("To: " + to)
     print("From: " + fro)
-    #print("to_i: " + to_i)
+    print("to_i: " + str(to_i))
     print('Input message: ' + input_message)
 
     print(type(ctx))
@@ -102,17 +118,17 @@ async def msg(ctx, team_to: str, input_message: str):
         await client.say(same_team_error_msg)
         return
 
-    #message = input_message[to_i+1:].strip()
-    message = input_message
-    #message = ' '.join(message.split())
+    message = input_message[to_i+1:].strip()
+    #message = input_message
+    ##message = ' '.join(message.split())
 
     #print(input_message)
     #print(to)
-    #print(message)
+    print(message)
     #print("Team", fro, 'sending message:', '\n"' + message + '"', '\nto team', to + '.')
     print("Team", fro, 'sending message:', '"' + message + '"', 'to team', to + '.')
 
-    await client.send_message(discord.Object(id='12324234183172'), 'message')
+    #await client.send_message(discord.Object(id='12324234183172'), 'message')
 
     confirmation_message = 'Message "' + message + '" sent to team ' + to + '.'
     await client.say(confirmation_message)
