@@ -5,27 +5,23 @@ from discord.ext.commands import Bot
 from discord.ext import commands
 import platform
 
-# main server, and list of channles
-#discord_server = discord.Client()
-
 # Countries and teams in the game (names of servers)
 team_list = ['usa','egypt'] # list of potential channels to send messages to
 team_dict = dict()
 server_name = "ggtest" # change this to the name of the server you want this bot to work in
+#server_name = "West Coast MegaGames"
 
 # Creating the bot client
-command_prefix = '-'
+command_prefix = '-' # this is the prefix used in front of each command
 bot_description = "Overlord Bot for Watch The Skies"
 client = Bot(description=bot_description, command_prefix=command_prefix, pm_help = True)
 
 ###################################################################################################
 
-# This is what happens everytime the bot launches. In this case, it prints information like server
-# count, user count the bot is connected to, and the bot id in the console.
-# Do not mess with it because the bot can break, if you wish to do so, please consult me or someone
-# trusted.
+# This is what loads when the bot starts up
 @client.event
 async def on_ready():
+	""" Loading up everything on start """
 	print('Logged in as ' + client.user.name + ' (ID:' + client.user.id + ') | Connected to ' +
 		  str(len(client.servers)) + ' servers | Connected to ' +
 		  str(len(set(client.get_all_members()))) + ' users')
@@ -37,27 +33,21 @@ async def on_ready():
 	print('https://discordapp.com/oauth2/authorize?client_id={}&scope=bot&permissions=8'.
 		  format(client.user.id))
 	print('--------')
-	#server_list = discord_server.server_list
+	
+	# We'll get a list of all servers, then we'll look for the desired server ('server_name', 
+	# above), then we'll create a dictionary of channels (if the name matches any in the 
+	# 'team_list' list above)
 	servers = client.servers
 	for server in servers:
-		print("##########")
-		print(server)
 		if server.name == server_name:
-			#print(server.members)
-			for member in server.members:
-				print(member.name)
-			#print(server.channels)
 			for channel in server.channels:
 				channel_name = channel.name.lower()
-				print(channel_name)
 				if channel_name in team_list:
-					pass
 					team_dict[channel_name] = channel
-	print("Team dict:")
-	print(team_dict)
+	print("Team dict initialized.")
 	print("##########")
 
-# This is a basic example of a call and response command. You tell it do "this" and it does it.
+# Basic ping command
 @client.command()
 async def ping(*args):
 	""" Just a ping command for the Overlord """
@@ -66,6 +56,7 @@ async def ping(*args):
 	await client.say(":ping_pong: Pong!")
 	#await asyncio.sleep(3)
 
+# To have the overlord echo something into the same channel it was commanded in
 @client.command()
 async def echo(*, message: str):
 	""" Has the Overlord echo a string """
@@ -73,82 +64,83 @@ async def echo(*, message: str):
 	print('Echoing: "', message + '"')
 	await client.say(message)
 
-#async def msg(*, input_message: str):
-#async def msg(ctx, *, input_message: str):
-#async def msg(ctx, team_to: str, input_message: str):
-#async def msg(team_to: str, input_message: discord.message):
-#async def msg(ctx, team_to: str, input_message: str):
+# Messaging function to send a message from one team (channel) to another
 @client.command(pass_context=True)
 async def msg(ctx, *, input_message: str):
 	""" Sends a message to another team's private channel """
 
+	# Parse out the name of the destination country from the message
 	to_i = input_message.find(' ')
-	to = input_message[0:to_i].title()
+	to_unfmt = input_message[0:to_i].title()
+	to = to_unfmt
+	message = input_message[to_i+1:].strip()
 
-	#to_msg = input_message[to_i+1:].strip()
+	# Getting the country's name from which 
+	from_unfmt = ctx.message.channel.name
+	from_unfmt = fro.title()
+	fro = from_unfmt
 
-	#print(to_msg)
-
-	#team_to = "Egypt"
-
-	#print(type(input_message))
-	print('Input message:', input_message)
-
-	#to = team_to
-	#fro = "PLACEHOLDER"
-	fro = ctx.message.channel.name
-	fro = fro.title()
-
+	# Specific country name checks:
+	# USA
 	if to.lower() == 'usa':
 		to = to.upper()
 	if fro.lower() == 'usa':
 		fro = fro.upper()
+	# UK
+	if to.lower() == 'uk':
+		to = 'United Kingdom'
+	if fro.lower() = 'uk':
+		fro = 'United Kingdom'
+	# South Africa
+	if to.lower() == 'sa':
+		to = 'South Africa'
+	if fro.lower() = 'sa':
+		fro = 'South Africa'
+	# Global News Network
+	if to.lower() == 'gnn':
+		to = 'Global News Network'
+	if fro.lower() = 'gnn':
+		fro = 'Global News Network'
+	# Badger News Corp
+	if to.lower() in ['bnc','badger']:
+		to = 'Badger News Corp'
+	if fro.lower() in ['bnc','badger']:
+		fro = 'Badger News Corp'
 
+	print('Input message:', input_message)
 	print("To: " + to)
 	print("From: " + fro)
 	print("to_i: " + str(to_i))
 	print('Input message: ' + input_message)
 
-	#print(type(ctx))
-	#print("Message sent from channel:", fro)
-
 	#Error Checking
+	if from_unfmt.lower() not in team_list:
+		invalid_channel_error_msg = 'You cannot use this command in this channel.'
+		await client.say(invalid_channel_error_msg)
+		return
 	if to_i < 1:
-		not_valid_msg_format = 'Not a valid message. The correct format is "'
+		not_valid_msg_format = 'Not a valid message. The correct format is: "'
 		not_valid_msg_format += command_prefix + 'msg COUNTRY MESSAGE".'
 		await client.say(not_valid_msg_format)
 		return
-	if to.lower() not in team_list:
-		not_team_error_msg = '"' + to + '"' + ' not a valid team. Try again.'
+	if to_unfmt.lower() not in team_list:
+		not_team_error_msg = '"' + to_unfmt + '"' + ' not a valid team. Try again.'
 		await client.say(not_team_error_msg)
 		return
-	if to == fro:
-		#print("ERROR")
-		#print("To:", to)
-		#print("From:", fro)
-		same_team_error_msg = "You don't need me to send a message to yourself."
+	if to_unfmt == fro_unfmt:
+		same_team_error_msg = 'Use "' + command_prefix + 'echo" instead to send a message to the'
+		same_team_error_msg += ' same channel.'
 		await client.say(same_team_error_msg)
 		return
 
-	message = input_message[to_i+1:].strip()
-	#message = input_message
-	##message = ' '.join(message.split())
-
-	#print(input_message)
-	#print(to)
-	#print(message)
-	#print("Team", fro, 'sending message:', '\n"' + message + '"', '\nto team', to + '.')
-	print("Team", fro, 'sending message:', '"' + message + '"', 'to team', to + '.')
-
-	#await client.send_message(discord.Object(id='12324234183172'), 'message')
-
+	# Send the message to its destination
 	send_msg = 'Incoming message from team ' + fro + ':\n"' + message + '".'
-	#print("Sent message:", send_msg)
-
 	await client.send_message(team_dict[to.lower()], send_msg)
 
-	#await client.say(message)
+	# Logging message for game controllers
+	print("Team", fro, 'sending message:', '"' + message + '"', 'to team', to + '.')
 
+	# Confirmation message for the team sending the message
 	confirmation_message = 'Message "' + message + '" sent to team ' + to + '.'
 	await client.say(confirmation_message)
 
@@ -156,21 +148,6 @@ async def msg(ctx, *, input_message: str):
 login_path = "local/botkey"
 login_file = open(login_path, 'r')
 login_lines = login_file.readlines()
-login_lines = [line.replace('\n','') for line in login_lines]
+login_lines = [line.replace('\n', '') for line in login_lines]
 botkey = login_lines[0]
 client.run(botkey)
-
-"""
-
-@client.command(pass_context=True)
-async def hey(ctx, value):
-	if value == "you":
-		await client.say("What's cooking?") 
-	else:
-		pass
-Something like that
-If it's with multiple spaces, you could use .join or ctx.message.content etc
-Just a tip- the ctx.message.content returns the content of the message including the command and prefix
-So strip that or index that off
-
-"""
