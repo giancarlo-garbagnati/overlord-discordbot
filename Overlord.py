@@ -89,17 +89,17 @@ async def msg(ctx, *, input_message: str):
 	# UK
 	if to.lower() == 'uk':
 		to = 'United Kingdom'
-	if fro.lower() = 'uk':
+	if fro.lower() == 'uk':
 		fro = 'United Kingdom'
 	# South Africa
 	if to.lower() == 'sa':
 		to = 'South Africa'
-	if fro.lower() = 'sa':
+	if fro.lower() == 'sa':
 		fro = 'South Africa'
 	# Global News Network
 	if to.lower() == 'gnn':
 		to = 'Global News Network'
-	if fro.lower() = 'gnn':
+	if fro.lower() == 'gnn':
 		fro = 'Global News Network'
 	# Badger News Corp
 	if to.lower() in ['bnc','badger']:
