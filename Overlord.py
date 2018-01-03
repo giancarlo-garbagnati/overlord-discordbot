@@ -6,7 +6,8 @@ from discord.ext import commands
 import platform
 
 # Countries and teams in the game (names of servers)
-team_list = ['usa','egypt'] # list of potential channels to send messages to
+team_list = ['usa', 'egypt', 'united-kingdom', 'gnn', 'bnc'] # list of potential channels to send
+                                                             # messages to and from
 team_dict = dict()
 server_name = "ggtest" # change this to the name of the server you want this bot to work in
 #server_name = "West Coast MegaGames"
@@ -44,7 +45,7 @@ async def on_ready():
 				channel_name = channel.name.lower()
 				if channel_name in team_list:
 					team_dict[channel_name] = channel
-	print("Team dict initialized.")
+	print("Team channel dictionary initialized.")
 	print("##########")
 
 # Basic ping command
@@ -71,14 +72,18 @@ async def msg(ctx, *, input_message: str):
 
 	# Parse out the name of the destination country from the message
 	to_i = input_message.find(' ')
-	to_unfmt = input_message[0:to_i].title()
-	to = to_unfmt
+	to_unfmt = input_message[0:to_i]
+	original_to = to_unfmt
+	to = to_unfmt.title()
+	to_key = to # For accessing the team channel dictionary
 	message = input_message[to_i+1:].strip()
 
+	original_to = to
+
 	# Getting the country's name from which 
-	from_unfmt = ctx.message.channel.name
-	from_unfmt = fro.title()
-	fro = from_unfmt
+	fro_unfmt = ctx.message.channel.name
+	fro_unfmt = fro_unfmt.title()
+	fro = fro_unfmt
 
 	# Specific country name checks:
 	# USA
@@ -88,33 +93,41 @@ async def msg(ctx, *, input_message: str):
 		fro = fro.upper()
 	# UK
 	if to.lower() == 'uk':
-		to = 'United Kingdom'
+		to = 'United-Kingdom'
+		to_key = to.lower()
 	if fro.lower() == 'uk':
-		fro = 'United Kingdom'
+		fro = 'United-Kingdom'
 	# South Africa
 	if to.lower() == 'sa':
-		to = 'South Africa'
+		to = 'South-Africa'
+		to_key = to.lower()
 	if fro.lower() == 'sa':
-		fro = 'South Africa'
+		fro = 'South-Africa'
 	# Global News Network
 	if to.lower() == 'gnn':
-		to = 'Global News Network'
+		to_unfmt = 'gnn'
+		to = 'Global-News-Network'
+		to_key = 'gnn'
 	if fro.lower() == 'gnn':
-		fro = 'Global News Network'
+		fro = 'Global-News-Network'
 	# Badger News Corp
 	if to.lower() in ['bnc','badger']:
-		to = 'Badger News Corp'
+		to_unfmt = 'bnc'
+		to = 'Badger-News-Corp'
+		to_key = 'bnc'
 	if fro.lower() in ['bnc','badger']:
-		fro = 'Badger News Corp'
+		fro = 'Badger-News-Corp'
+	# Add more of these as necessary
 
-	print('Input message:', input_message)
-	print("To: " + to)
-	print("From: " + fro)
-	print("to_i: " + str(to_i))
-	print('Input message: ' + input_message)
+	# Diagnostic messages
+	#print('Input message:', input_message)
+	#print("To: " + to)
+	#print("From: " + fro)
+	#print("to_i: " + str(to_i))
+	#print('Input message: ' + input_message)
 
 	#Error Checking
-	if from_unfmt.lower() not in team_list:
+	if fro_unfmt.lower() not in team_list:
 		invalid_channel_error_msg = 'You cannot use this command in this channel.'
 		await client.say(invalid_channel_error_msg)
 		return
@@ -123,8 +136,10 @@ async def msg(ctx, *, input_message: str):
 		not_valid_msg_format += command_prefix + 'msg COUNTRY MESSAGE".'
 		await client.say(not_valid_msg_format)
 		return
-	if to_unfmt.lower() not in team_list:
-		not_team_error_msg = '"' + to_unfmt + '"' + ' not a valid team. Try again.'
+	if to.lower() not in team_list:
+		print('Error!')
+		print(to_unfmt.lower())
+		not_team_error_msg = '"' + original_to + '"' + ' not a valid team. Try again.'
 		await client.say(not_team_error_msg)
 		return
 	if to_unfmt == fro_unfmt:
@@ -135,7 +150,7 @@ async def msg(ctx, *, input_message: str):
 
 	# Send the message to its destination
 	send_msg = 'Incoming message from team ' + fro + ':\n"' + message + '".'
-	await client.send_message(team_dict[to.lower()], send_msg)
+	await client.send_message(team_dict[to_key.lower()], send_msg)
 
 	# Logging message for game controllers
 	print("Team", fro, 'sending message:', '"' + message + '"', 'to team', to + '.')
