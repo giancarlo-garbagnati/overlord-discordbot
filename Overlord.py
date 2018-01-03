@@ -7,14 +7,21 @@ import platform
 
 # Countries and teams in the game (names of servers)
 # List of potential channels to sent messages to and from
-team_list = ['usa', 'egypt', 'united-kingdom', 'gnn', 'bnc', 'south-africa']
+country_teams = ['usa', 'china', 'russia', 'united-kingdom', 'france', 'india', 'brazil', 
+				 'japan', 'iran', 'south-africa', 'australia', 'egypt']
+media_teams = ['global-news-network', 'badger-news-corp']
+other_human_teams = ['united-nations']
+void_channel = ['void']
+team_list = country_teams + media_teams + other_human_teams
+print(team_list)
+#team_list = ['usa', 'egypt', 'united-kingdom', 'global-news-network', 'bnc', 'south-africa']
 team_dict = dict()
-server_name = "ggtest" # change this to the name of the server you want this bot to work in
-#server_name = "West Coast MegaGames"
+#server_name = "ggtest" # change this to the name of the server you want this bot to work in
+server_name = "Watch The Skies"
 
 # Creating the bot client
 command_prefix = '-' # this is the prefix used in front of each command
-bot_description = "Overlord Bot for Watch The Skies"
+bot_description = "Sky Watcher Bot for Watch The Skies"
 client = Bot(description=bot_description, command_prefix=command_prefix, pm_help = True)
 
 ###################################################################################################
@@ -40,27 +47,29 @@ async def on_ready():
 	# 'team_list' list above)
 	servers = client.servers
 	for server in servers:
+		#print(server.name)
 		if server.name == server_name:
 			for channel in server.channels:
 				channel_name = channel.name.lower()
 				if channel_name in team_list:
 					team_dict[channel_name] = channel
 	print("Team channel dictionary initialized.")
+	#print(team_dict)
 	print("##########")
 
 # Basic ping command
 @client.command()
 async def ping(*args):
-	""" A ping command for the Overlord """
+	""" A ping command for the Sky Watcher """
 	pinguser = "User"
-	print("User " + pinguser + " is pinging the Overlord.")
+	print("User " + pinguser + " is pinging the Sky Watcher.")
 	await client.say(":ping_pong: Pong!")
 	#await asyncio.sleep(3)
 
-# To have the overlord echo something into the same channel it was commanded in
+# To have the Sky Watcher echo something into the same channel it was commanded in
 @client.command()
 async def echo(*, message: str):
-	""" Has the Overlord echo a string 
+	""" Has the Sky Watcher echo a string 
 	Use format: "-echo MESSAGE"
 	"""
 	#await print(message)
@@ -86,9 +95,8 @@ async def msg(ctx, *, input_message: str):
 	original_to = to
 
 	# Getting the country's name from which 
-	fro_unfmt = ctx.message.channel.name
-	fro_unfmt = fro_unfmt.title()
-	fro = fro_unfmt
+	fro = ctx.message.channel.name
+	fro = fro.title()
 
 	# Specific country name checks:
 	# USA
@@ -106,22 +114,21 @@ async def msg(ctx, *, input_message: str):
 	if to.lower() == 'sa':
 		to = 'South-Africa'
 		to_key = to.lower()
-	if fro.lower() == 'sa':
-		fro = 'South-Africa'
 	# Global News Network
 	if to.lower() in ['gnn', 'global-news-network']:
-		to_unfmt = 'gnn'
+		to_unfmt = 'global-news-network'
 		to = 'Global-News-Network'
-		to_key = 'gnn'
-	if fro.lower() in ['gnn', 'global-news-network']:
-		fro = 'Global-News-Network'
+		to_key = 'global-news-network'
 	# Badger News Corp
-	if to.lower() in ['bnc','badger']:
-		to_unfmt = 'bnc'
+	if to.lower() in ['bnc','badger', 'badger-news-network', 'badger-news-corp']:
+		to_unfmt = 'badger-news-corp'
 		to = 'Badger-News-Corp'
-		to_key = 'bnc'
-	if fro.lower() in ['bnc','badger']:
-		fro = 'Badger-News-Corp'
+		to_key = 'badger-news-corp'
+	# United Nations
+	if to.lower() in ['un', 'united-nations']:
+		to_unfmt = 'united-nations'
+		to = 'United-Nations'
+		to_key = 'united-nations'
 	# Add more of these as necessary
 
 	# Diagnostic messages
@@ -132,7 +139,7 @@ async def msg(ctx, *, input_message: str):
 	#print('Input message: ' + input_message)
 
 	#Error Checking
-	if fro_unfmt.lower() not in team_list:
+	if fro.lower() not in team_list:
 		invalid_channel_error_msg = 'You cannot use this command in this channel.'
 		await client.say(invalid_channel_error_msg)
 		return
@@ -145,7 +152,7 @@ async def msg(ctx, *, input_message: str):
 		not_team_error_msg = '"' + original_to + '"' + ' not a valid team. Try again.'
 		await client.say(not_team_error_msg)
 		return
-	if to_unfmt == fro_unfmt:
+	if to_key == fro:
 		same_team_error_msg = 'Use "' + command_prefix + 'echo" instead to send a message to the'
 		same_team_error_msg += ' same channel.'
 		await client.say(same_team_error_msg)
@@ -156,10 +163,10 @@ async def msg(ctx, *, input_message: str):
 	await client.send_message(team_dict[to_key.lower()], send_msg)
 
 	# Logging message for game controllers
-	print("Team", fro, 'sending message:', '"' + message + '"', 'to team', to + '.')
+	print("Team", fro, 'sending message:', '"' + message + '"', 'to ', to + '.')
 
 	# Confirmation message for the team sending the message
-	confirmation_message = 'Message "' + message + '" sent to team ' + to + '.'
+	confirmation_message = 'Message "' + message + '" sent to ' + to + '.'
 	await client.say(confirmation_message)
 
 # Get key info
@@ -169,3 +176,23 @@ login_lines = login_file.readlines()
 login_lines = [line.replace('\n', '') for line in login_lines]
 botkey = login_lines[0]
 client.run(botkey)
+
+"""
+
+1) Team to Team comms - Being able to get something posted from a private team channel to another private team channel
+
+1.5) Void msging
+
+2) Team to Controller Channel - Being able to get something posted from a private team channel to hidden controller channel
+
+3) Press Release - Being able to publish information into a group Public Release Channel
+
+4) Public Information Blast - Information that gets automated into all channels.
+
+5) Time-keeping - Phase/turn information that get's automated to all channels.
+
+
+Those were the main things we were aiming to do.
+Basically 2 diffrent functions, but deployed in 5 ways.
+
+"""
