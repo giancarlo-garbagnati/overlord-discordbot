@@ -6,8 +6,8 @@ from discord.ext import commands
 import platform
 
 # Countries and teams in the game (names of servers)
-team_list = ['usa', 'egypt', 'united-kingdom', 'gnn', 'bnc', 'south-africa'] # list of potential channels to send
-                                                             # messages to and from
+# List of potential channels to sent messages to and from
+team_list = ['usa', 'egypt', 'united-kingdom', 'gnn', 'bnc', 'south-africa']
 team_dict = dict()
 server_name = "ggtest" # change this to the name of the server you want this bot to work in
 #server_name = "West Coast MegaGames"
@@ -51,7 +51,7 @@ async def on_ready():
 # Basic ping command
 @client.command()
 async def ping(*args):
-	""" Just a ping command for the Overlord """
+	""" A ping command for the Overlord """
 	pinguser = "User"
 	print("User " + pinguser + " is pinging the Overlord.")
 	await client.say(":ping_pong: Pong!")
@@ -60,7 +60,9 @@ async def ping(*args):
 # To have the overlord echo something into the same channel it was commanded in
 @client.command()
 async def echo(*, message: str):
-	""" Has the Overlord echo a string """
+	""" Has the Overlord echo a string 
+	Use format: "-echo MESSAGE"
+	"""
 	#await print(message)
 	print('Echoing: "', message + '"')
 	await client.say(message)
@@ -68,7 +70,10 @@ async def echo(*, message: str):
 # Messaging function to send a message from one team (channel) to another
 @client.command(pass_context=True)
 async def msg(ctx, *, input_message: str):
-	""" Sends a message to another team's private channel """
+	""" Sends a message to another (valid) team's private channel.
+	Use format: "-msg TEAM-NAME MESSAGE", with '-' in place of spaces in the TEAM-NAME
+	(spaces are fine to use in the MESSAGE portion of this command)
+	"""
 
 	# Parse out the name of the destination country from the message
 	to_i = input_message.find(' ')
