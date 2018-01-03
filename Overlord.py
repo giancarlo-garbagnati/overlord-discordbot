@@ -6,7 +6,7 @@ from discord.ext import commands
 import platform
 
 # Countries and teams in the game (names of servers)
-team_list = ['usa', 'egypt', 'united-kingdom', 'gnn', 'bnc'] # list of potential channels to send
+team_list = ['usa', 'egypt', 'united-kingdom', 'gnn', 'bnc', 'south-africa'] # list of potential channels to send
                                                              # messages to and from
 team_dict = dict()
 server_name = "ggtest" # change this to the name of the server you want this bot to work in
@@ -104,11 +104,11 @@ async def msg(ctx, *, input_message: str):
 	if fro.lower() == 'sa':
 		fro = 'South-Africa'
 	# Global News Network
-	if to.lower() == 'gnn':
+	if to.lower() in ['gnn', 'global-news-network']:
 		to_unfmt = 'gnn'
 		to = 'Global-News-Network'
 		to_key = 'gnn'
-	if fro.lower() == 'gnn':
+	if fro.lower() in ['gnn', 'global-news-network']:
 		fro = 'Global-News-Network'
 	# Badger News Corp
 	if to.lower() in ['bnc','badger']:
@@ -136,9 +136,7 @@ async def msg(ctx, *, input_message: str):
 		not_valid_msg_format += command_prefix + 'msg COUNTRY MESSAGE".'
 		await client.say(not_valid_msg_format)
 		return
-	if to.lower() not in team_list:
-		print('Error!')
-		print(to_unfmt.lower())
+	if to_key.lower() not in team_list:
 		not_team_error_msg = '"' + original_to + '"' + ' not a valid team. Try again.'
 		await client.say(not_team_error_msg)
 		return
