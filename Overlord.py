@@ -4,6 +4,7 @@ import asyncio
 from discord.ext.commands import Bot
 from discord.ext import commands
 import platform
+import random
 
 # Countries and teams in the game (names of servers)
 # List of potential channels to sent messages to and from
@@ -64,6 +65,7 @@ async def on_ready():
 	#print(team_comms_dict)
 	print("##############################")
 
+
 # Basic ping command
 @client.command()
 async def ping(*args):
@@ -72,6 +74,7 @@ async def ping(*args):
 	print("User " + pinguser + " is pinging the Sky Watcher.")
 	await client.say(":ping_pong: Pong!")
 	#await asyncio.sleep(3)
+
 
 # To have the Sky Watcher echo something into the same channel it was commanded in
 @client.command()
@@ -82,6 +85,29 @@ async def echo(*, message: str):
 	#await print(message)
 	print('Echoing: "', message + '"')
 	await client.say(message)
+
+
+# Roll dice command (shamelessly adapted from Rapptz's basic_bot:
+# https://github.com/Rapptz/discord.py/blob/async/examples/basic_bot.py)
+@client.command()
+async def roll(dice : str):
+	"""Rolls a dice in NdN format."""
+	try:
+		rolls, limit = map(int, dice.split('d'))
+	except Exception:
+		await client.say('Format has to be in NdN!')
+		return
+
+	# Roll the dice, and sum them up
+	roll_result = [random.randint(1, limit) for r in range(rolls)]
+	result = ', '.join(str(roll_result))
+	roll_sum = sum(roll_result)
+
+	result_message = str(roll_result) + ' (Sum = ' + str(roll_sum) + ')'
+
+	#result = ', '.join(str(random.randint(1, limit)) for r in range(rolls))
+	await client.say(result_message)
+
 
 # Messaging function to send a message from one team (channel) to another
 @client.command(pass_context=True)
@@ -98,7 +124,7 @@ async def msg(ctx, *, input_message: str):
 	if '-comms' in to_unfmt: # stripping off '-comms' if they included it in the command
 		to_unfmt = to_unfmt[:to_unfmt.rfind('-comms')]
 	to, to_key = name_disambig(to_unfmt) # For accessing the team channel dictionary
-	to = to_unfmt.title()
+	#to = to_unfmt.title()
 	message = input_message[to_i+1:].strip() # stripping off the remainder for the msg
 
 	# Getting the sending team's name 
@@ -184,12 +210,68 @@ async def msg(ctx, *, input_message: str):
 		confirmation_message = 'Message "' + message + '" sent to ' + to + '.'
 	await client.say(confirmation_message)
 
+
 # Command for a team to publish a press release
 @client.command(pass_context=True)
-async def tbd(ctx, *, input_message: str):
-	""" TBD
+async def press_release(ctx, *, input_message: str):
+	""" Publishes a press release to the press-releases channel under the team's name.
+	Can only be published by someone with a @Head of State role
 	"""
-	pass
+	
+	# Get sender's name
+	fro_original = ctx.message.channel.name
+	fro_i = fro_original.rfind('-comms')
+	fro = fro_original[:fro_i]
+	fro, fro_key = name_disambig(fro)
+
+	# Get the user info for the person who wrote this command
+	user = ctx.message.author
+	# https://stackoverflow.com/questions/44893044/how-to-get-users-roles-discord-python
+	#user.roles
+	#print(user)
+	"""
+	if 'head of state' in [role.name.lower() for role in user.roles]:
+		await client.say("Hail to the Chief")
+	else:
+		await client.say("I don't have to listen to you")
+	#print(user.roles)
+	"""
+
+	#input_message
+
+	#Error Checking
+	if (fro_i < 1) or (fro_key.lower() not in team_comms_list): # not in correct channel
+		#print(fro_i)
+		#print(fro.lower())
+		#print(team_comms_list)
+		invalid_channel_error_msg = 'You cannot use this command in this channel.'
+		await client.say(invalid_channel_error_msg)
+		return
+	if len(input_message.strip()) < 1: # missing a message
+		not_valid_msg_format = 'Not a valid message. The correct format for this command is: "'
+		not_valid_msg_format += command_prefix + 'msg COUNTRY MESSAGE".'
+		await client.say(not_valid_msg_format)
+		return
+	# Check if the user is a head-of-state. This command can only be used by heads-of-state
+	if 'head of state' not in [role.name.lower() for role in user.roles]:
+		not_headofstate_error = 'Only Heads-of-State can use this command in their respective '
+		not_headofstate_error += '-comms channel. Non-Heads-of-State must go through news or '
+		not_headofstate_error += 'with a Press conference.'
+		await client.say(not_headofstate_error)
+		return
+
+	# Send the message to its destination
+	send_msg = 'Official press release from ' + fro.upper() + ':\n"' + input_message + '".'
+	await client.send_message(public_dict['press-releases'], send_msg)
+
+	# Logging message for game controllers
+	log_message = 'Head-of-State (' + user.name + ') from ' + fro + ' is publishing the following press release: "'
+	log_message += input_message + '".'
+	print(log_message)
+
+	# Confirmation message for the team sending the message
+	confirmation_message = 'Press release published successfully.'
+	await client.say(confirmation_message)
 
 
 # Function for helping sort out different possible team names
@@ -198,16 +280,18 @@ def name_disambig(team_name):
 	"""
 	
 	# If nothing else, it'll return itself twice (assuming the name and key are the same and correct)
-	name = team_name
+	name = team_name.replace('_','-')
 	key = team_name
 
 	# Specific country name checks:
 	# USA
-	if name.lower() in ['usa','united-states','united-states-of-america','america']:
-		name = name.upper()
+	if name.lower() in ['usa', 'united-states', 'united-states-of-america', 'america', "'murica", 'murica']:
+		name = 'USA'
+		key = 'usa'
 	# UK
-	elif name.lower() in ['uk', 'united-kingdom']:
-		name = name.upper()
+	elif name.lower() in ['uk', 'united-kingdom', 'england']:
+		name = 'UK'
+		key = 'uk'
 	# South Africa
 	elif name.lower() == 'sa':
 		name = 'South-Africa'
@@ -312,11 +396,11 @@ client.run(botkey)
 
 1.5) Void msging
 
+3) Press Release - Being able to publish information into a group Public Release Channel
+
 DONE
 
 2) Team to Controller Channel - Being able to get something posted from a private team channel to hidden controller channel
-
-3) Press Release - Being able to publish information into a group Public Release Channel
 
 4) Public Information Blast - Information that gets automated into all channels.
 
@@ -331,11 +415,9 @@ Basically 2 diffrent functions, but deployed in 5 ways.
 """
 
 To do:
-1) change msg destination to the -comms channels
-2) void messaging (same as regular msg?)
-3) press release
-4) all comms blast
-5) time-keeping
-6) dynamically adding new teams
+1) all comms blast
+2) time-keeping
+3) dynamically adding new teams
+4) look into using @ tags
 
 """
