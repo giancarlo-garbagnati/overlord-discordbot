@@ -112,7 +112,7 @@ async def echo(*, message: str):
 # Roll dice command (shamelessly adapted from Rapptz's basic_bot:
 # https://github.com/Rapptz/discord.py/blob/async/examples/basic_bot.py)
 @client.command()
-async def roll(dice : str):
+async def roll(dice : str, mod : int = 0):
 	"""Rolls a dice in NdN format."""
 	try:
 		rolls, limit = map(int, dice.split('d'))
@@ -125,7 +125,10 @@ async def roll(dice : str):
 	result = ', '.join(str(roll_result))
 	roll_sum = sum(roll_result)
 
-	result_message = str(roll_result) + ' (Sum = ' + str(roll_sum) + ')'
+	result_message = str(roll_result) + ' (sum = ' + str(roll_sum) + ')'
+
+	if mod != 0:
+		result_message += '\nWith modifer, sum = ' + str(roll_sum + mod)
 
 	#result = ', '.join(str(random.randint(1, limit)) for r in range(rolls))
 	await client.say(result_message)
