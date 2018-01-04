@@ -20,10 +20,13 @@ human_team_list = country_teams + media_teams + un_teams
 #print(human_team_list)
 # the above lists might not be needed
 
-team_comms_list = []
 #team_list = ['usa', 'egypt', 'united-kingdom', 'global-news-network', 'bnc', 'south-africa']
+team_comms_list = []
 team_comms_dict = dict()
-#server_name = "ggtest" # change this to the name of the server you want this bot to work in
+team_aar_list = []
+team_aar_dict = dict()
+team_disc_list = []
+team_disc_dict = dict()
 control_list = []
 control_dict = dict()
 category_list = []
@@ -33,12 +36,16 @@ public_list = ['role-assignment', 'announcements', 'pre-game-chatter', 'press-re
 public_dict = dict()
 other_list = []
 other_dict = dict()
+#server_name = "ggtest" # change this to the name of the server you want this bot to work in
 server_name = "Watch The Skies"
 
 # Creating the bot client
 command_prefix = '/' # this is the prefix used in front of each command
 bot_description = "Sky Watcher Bot for Watch The Skies"
 client = Bot(description=bot_description, command_prefix=command_prefix, pm_help = True)
+
+# Greeting message for when a new user joins the server
+greeting_msg = """Hi {0.mention}! Welcome to Watch the Skies - Sacramento! What team are you on, and what role will you be playing?"""
 
 ###################################################################################################
 
@@ -64,6 +71,19 @@ async def on_ready():
 	print("Team channel list and dictionary initialized.")
 	#print(team_comms_dict)
 	print("##############################")
+
+
+# Greeting message upon user joining
+@client.event
+async def on_member_join(member):
+	""" On member join function
+	"""
+	server = member.server
+	#member_role = __getRole(server.roles, role)
+	await client.send_message(public_dict['role-assignment'], greeting_msg.format(member))
+	print("Member {} joined the server.".format(member))
+	#await client.send_message(member, welcome_msg.format(member, server))
+	#await client.send_message(client.get_channel(log_channel_id), "{0.name} has joined".format(member))
 
 
 # Basic ping command
@@ -334,6 +354,12 @@ def update_teams(verbose=True):
 				# Setting up control team lists
 				control_i = channel_name.rfind('-control')
 				control_name = channel_name[:control_i]
+				# Setting up team after action report (aar) list and dict
+				team_aar_i = channel_name.rfind('-aar')
+				team_aar = channel_name[:team_aar_i]
+				# Setting up team discussion list and dict
+				team_disc_i = channel_name.rfind('-discussion')
+				team_disc = channel_name[:team_disc_i]
 
 				if control_i > 1: # if this exists, we add it to the control list and dict
 					control_list.append(control_name)
@@ -347,6 +373,12 @@ def update_teams(verbose=True):
 				elif channel_name == 'void': # special case for void channel
 					team_comms_list.append(channel_name)
 					team_comms_dict[channel_name] = channel
+				elif team_aar_i > 1: # if this exists, add it to the aar list and dict
+					team_aar_list.append(team_aar)
+					team_aar_dict[team_aar] = channel
+				elif team_disc_i > 1: # if this exists, add it to the disc list and dict
+					team_disc_list.append(team_disc)
+					team_disc_dict[team_disc] = channel
 				elif channel.type == 4: # catching all the categories
 					category_list.append(channel_name)
 					category_dict[channel_name] = channel
@@ -398,6 +430,8 @@ client.run(botkey)
 
 3) Press Release - Being able to publish information into a group Public Release Channel
 
+6) Greeting message
+
 DONE
 
 2) Team to Controller Channel - Being able to get something posted from a private team channel to hidden controller channel
@@ -416,8 +450,10 @@ Basically 2 diffrent functions, but deployed in 5 ways.
 
 To do:
 1) all comms blast
-2) time-keeping
-3) dynamically adding new teams
-4) look into using @ tags
+2) team to controller channel
+2.5) controller to team channel
+3) time-keeping
+4) dynamically adding new teams
+5) look into using @ tags
 
 """
