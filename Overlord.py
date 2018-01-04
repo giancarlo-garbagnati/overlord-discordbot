@@ -45,7 +45,9 @@ bot_description = "Sky Watcher Bot for Watch The Skies"
 client = Bot(description=bot_description, command_prefix=command_prefix, pm_help = True)
 
 # Greeting message for when a new user joins the server
-greeting_msg = """Hi {0.mention}! Welcome to Watch the Skies - Sacramento! What team are you on, and what role will you be playing?"""
+greeting_msg = """Hi {0.mention}! Welcome to the game server for Watch the Skies - Sacramento! """
+greeting_msg += """Please tell us what team are you on, and what role will you be playing so we """ 
+greeting_msg += """can give you access to your play area."""
 
 ###################################################################################################
 
