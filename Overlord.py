@@ -339,12 +339,6 @@ async def psa(ctx, *, input_message: str):
 	
 	# PSA announcement
 	PSA_str = 'PUBLIC SERVICE ANNOUNCEMENT:\n'
-	PSA_str += input_message
-
-	# We'll call blast to do the work
-	blast(ctx, PSA_str)
-
-	return
 
 	# The role tag that's allowed to use this command
 	blast_role = 'announcer'
@@ -367,12 +361,12 @@ async def psa(ctx, *, input_message: str):
 	# Check if the user is has a @announcer role tag
 	if blast_role not in [role.name.lower() for role in user.roles]:
 		if user.name.lower() != 'pandiculate':
-			not_announcer_error = 'Only an @Announcer can use this command.'
+			not_announcer_error = 'Only an @announcer can use this command.'
 			await client.say(not_announcer_error)
 			return
 	
 	# Send the message to its destination
-	send_msg = input_message
+	send_msg = PSA_str + input_message
 	''' send to all channels here '''
 	testing = True # if this is True, we'll restrict this command to just message dev channels
 	if testing:
@@ -384,12 +378,12 @@ async def psa(ctx, *, input_message: str):
 	#await client.send_message(public_dict['press-releases'], send_msg)
 
 	# Logging message for game controllers
-	log_message = 'The following message is being blasted to all channels by user ' + user.name + ': "'
+	log_message = 'The following PSA is being sent to all channels by user ' + user.name + ': "'
 	log_message += input_message + '".'
 	print(log_message)
 
 	# Confirmation message for the team sending the message
-	confirmation_message = 'Blast announcement sent successfully.'
+	confirmation_message = 'PSA sent successfully.'
 	await client.say(confirmation_message)
 
 # Function for helping sort out different possible team names
@@ -531,13 +525,13 @@ client.run(botkey)
 
 3) Press Release - Being able to publish information into a group Public Release Channel
 
+4) Public Information Blast - Information that gets automated into all channels.
+
 6) Greeting message
 
 DONE
 
 2) Team to Controller Channel - Being able to get something posted from a private team channel to hidden controller channel
-
-4) Public Information Blast - Information that gets automated into all channels.
 
 5) Time-keeping - Phase/turn information that get's automated to all channels.
 
@@ -551,8 +545,6 @@ Basically 2 diffrent functions, but deployed in 5 ways.
 
 To do:
 1) all comms blast
-1.1) blast
-1.2) psa
 1.3) ...?
 1.5) Fix UN -comms msg
 2) team to controller channel
@@ -560,5 +552,11 @@ To do:
 3) time-keeping
 4) dynamically adding new teams
 5) look into using @ tags
+
+Done (but testing):
+1) all comms blast
+1.1) blast
+1.2) psa
+
 
 """
