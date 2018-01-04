@@ -21,6 +21,7 @@ human_team_list = country_teams + media_teams + un_teams
 # the above lists might not be needed
 
 #team_list = ['usa', 'egypt', 'united-kingdom', 'global-news-network', 'bnc', 'south-africa']
+# There's probably a better way to do this...
 team_comms_list = []
 team_comms_dict = dict()
 team_aar_list = []
@@ -31,6 +32,10 @@ control_list = []
 control_dict = dict()
 category_list = []
 category_dict = dict()
+dev_list = []
+dev_dict = dict()
+all_list = []
+all_dict = dict()
 public_list = ['role-assignment', 'announcements', 'pre-game-chatter', 'press-releases',
 			   'global-chat', 'general']
 public_dict = dict()
@@ -73,6 +78,9 @@ async def on_ready():
 	print("Team channel list and dictionary initialized.")
 	#print(team_comms_dict)
 	print("##############################")
+
+
+	#await client.send_message(team_comms_dict[to_key.lower()], send_msg)
 
 
 # Greeting message upon user joining
@@ -157,46 +165,15 @@ async def msg(ctx, *, input_message: str):
 	fro_i = fro_original.rfind('-comms')
 	fro = fro_original[:fro_i]
 	fro, fro_key = name_disambig(fro)
-
-	"""
-	# Specific country name checks:
-	# USA
-	if to.lower() in ['usa','united-states','united-states-of-america','america']:
-		to = to.upper()
-	if fro.lower() == 'usa':
-		fro = fro.upper()
-	# UK
-	if to.lower() in ['uk', 'united-kingdom']:
-		to = 'uk'.upper()
-		to_key = to.lower()
-	if fro.lower() in ['uk', 'united-kingdom']:
-		fro = 'uk'.upper()
-	# South Africa
-	if to.lower() == 'sa':
-		to = 'South-Africa'
-		to_key = to.lower()
-	# Global News Network
-	if to.lower() in ['gnn', 'global-news-network', 'global-news', 'global-news-corp']:
-		to = 'Global-News-Network'
-		to_key = 'gnn'
-	# Badger News Corp
-	if to.lower() in ['bnc', 'badger', 'badger-news-network', 'badger-news-corp', 'badger-news']:
-		to = 'Badger-News-Corp'
-		to_key = 'bnc'
-	# United Nations
-	if to.lower() in ['un', 'united-nations']:
-		to = 'United-Nations'
-		to_key = 'un'
-	# More UN comms? <======================================================================
-	# Add more of these as necessary
-	"""
 	
 	# Diagnostic messages
-	#print('Input message:', input_message)
-	#print("To: " + to)
-	#print("From: " + fro)
-	#print("to_i: " + str(to_i))
-	#print('Input message: ' + input_message)
+	"""
+	print('Input message:', input_message)
+	print("To: " + to)
+	print("From: " + fro)
+	print("to_i: " + str(to_i))
+	print('Input message: ' + input_message)
+	"""
 
 	#Error Checking
 	if (fro_i < 1) or (fro_key.lower() not in team_comms_list): # not in correct channel
@@ -240,9 +217,9 @@ async def msg(ctx, *, input_message: str):
 @client.command(pass_context=True)
 async def press_release(ctx, *, input_message: str):
 	""" Publishes a press release to the press-releases channel under the team's name.
-	Can only be published by someone with a @Head of State role
+	Can only be published by someone with a @Head of State role tag
 	"""
-	
+
 	# Get sender's name
 	fro_original = ctx.message.channel.name
 	fro_i = fro_original.rfind('-comms')
@@ -274,7 +251,7 @@ async def press_release(ctx, *, input_message: str):
 		return
 	if len(input_message.strip()) < 1: # missing a message
 		not_valid_msg_format = 'Not a valid message. The correct format for this command is: "'
-		not_valid_msg_format += command_prefix + 'msg COUNTRY MESSAGE".'
+		not_valid_msg_format += command_prefix + 'press_release MESSAGE".'
 		await client.say(not_valid_msg_format)
 		return
 	# Check if the user is a head-of-state. This command can only be used by heads-of-state
@@ -299,9 +276,126 @@ async def press_release(ctx, *, input_message: str):
 	await client.say(confirmation_message)
 
 
+# Command for control to be able to blast a message to all channels
+@client.command(pass_context=True)
+async def blast(ctx, *, input_message: str):
+	""" Publishes a message to all channels (sends the message as is)
+	Can only be published by someone with an @announcer role tag
+	"""
+	
+	# The role tag that's allowed to use this command
+	blast_role = 'announcer'
+
+	# Get sender's name
+	fro_original = ctx.message.channel.name
+	fro_i = fro_original.rfind('-comms')
+	fro = fro_original[:fro_i]
+	fro, fro_key = name_disambig(fro)
+
+	# Get the user info for the person who wrote this command
+	user = ctx.message.author
+
+	#Error Checking
+	if len(input_message.strip()) < 1: # missing a message
+		not_valid_msg_format = 'Not a valid message. The correct format for this command is: "'
+		not_valid_msg_format += command_prefix + 'msg COUNTRY MESSAGE".'
+		await client.say(not_valid_msg_format)
+		return
+	# Check if the user is has a @announcer role tag
+	if blast_role not in [role.name.lower() for role in user.roles]:
+		if user.name.lower() != 'pandiculate':
+			not_announcer_error = 'Only an @Announcer can use this command.'
+			await client.say(not_announcer_error)
+			return
+	
+	# Send the message to its destination
+	send_msg = input_message
+	''' send to all channels here '''
+	testing = True # if this is True, we'll restrict this command to just message dev channels
+	if testing:
+		for key, value in dev_dict.items():
+			await client.send_message(value, send_msg)
+	else: # otherwise everyone gets the message
+		for key, value in all_dict.items():
+			await client.send_message(value, send_msg)
+	#await client.send_message(public_dict['press-releases'], send_msg)
+
+	# Logging message for game controllers
+	log_message = 'The following message is being blasted to all channels by user ' + user.name + ': "'
+	log_message += input_message + '".'
+	print(log_message)
+
+	# Confirmation message for the team sending the message
+	confirmation_message = 'Blast announcement sent successfully.'
+	await client.say(confirmation_message)
+
+# Command for control to send a PSA to all channels (differs from the blast command as it'll prepend 
+# the message with a 'PSA'-like string)
+@client.command(pass_context=True)
+async def psa(ctx, *, input_message: str):
+	""" Publishes a PSA to all channels (sends the message prepended with a 'PSA'-like announcement)
+	Can only be published by someone with an @announcer role tag
+	"""
+	
+	# PSA announcement
+	PSA_str = 'PUBLIC SERVICE ANNOUNCEMENT:\n'
+	PSA_str += input_message
+
+	# We'll call blast to do the work
+	blast(ctx, PSA_str)
+
+	return
+
+	# The role tag that's allowed to use this command
+	blast_role = 'announcer'
+
+	# Get sender's name
+	fro_original = ctx.message.channel.name
+	fro_i = fro_original.rfind('-comms')
+	fro = fro_original[:fro_i]
+	fro, fro_key = name_disambig(fro)
+
+	# Get the user info for the person who wrote this command
+	user = ctx.message.author
+
+	#Error Checking
+	if len(input_message.strip()) < 1: # missing a message
+		not_valid_msg_format = 'Not a valid message. The correct format for this command is: "'
+		not_valid_msg_format += command_prefix + 'msg COUNTRY MESSAGE".'
+		await client.say(not_valid_msg_format)
+		return
+	# Check if the user is has a @announcer role tag
+	if blast_role not in [role.name.lower() for role in user.roles]:
+		if user.name.lower() != 'pandiculate':
+			not_announcer_error = 'Only an @Announcer can use this command.'
+			await client.say(not_announcer_error)
+			return
+	
+	# Send the message to its destination
+	send_msg = input_message
+	''' send to all channels here '''
+	testing = True # if this is True, we'll restrict this command to just message dev channels
+	if testing:
+		for key, value in dev_dict.items():
+			await client.send_message(value, send_msg)
+	else: # otherwise everyone gets the message
+		for key, value in all_dict.items():
+			await client.send_message(value, send_msg)
+	#await client.send_message(public_dict['press-releases'], send_msg)
+
+	# Logging message for game controllers
+	log_message = 'The following message is being blasted to all channels by user ' + user.name + ': "'
+	log_message += input_message + '".'
+	print(log_message)
+
+	# Confirmation message for the team sending the message
+	confirmation_message = 'Blast announcement sent successfully.'
+	await client.say(confirmation_message)
+
 # Function for helping sort out different possible team names
 def name_disambig(team_name):
-	""" Helper function for helping sort through ambiguous team names
+	""" Helper function for helping sort through ambiguous team names.
+	Returns tuple of 2 str: a 'proper' team name, and a key to access channels in the various dictionaries
 	"""
 	
 	# If nothing else, it'll return itself twice (assuming the name and key are the same and correct)
@@ -365,58 +459,60 @@ def update_teams(verbose=True):
 				# Setting up team discussion list and dict
 				team_disc_i = channel_name.rfind('-discussion')
 				team_disc = channel_name[:team_disc_i]
-
-				if control_i > 1: # if this exists, we add it to the control list and dict
-					control_list.append(control_name)
-					control_dict[control_name] = channel
-				elif channel_name == 'development': # special case for the dev channel
-					control_list.append(channel_name)
-					control_dict[channel_name] = channel
-				elif team_name_i > 1: # if this exists, add it to the list and the channel to the dict
-					team_comms_list.append(team_name)
-					team_comms_dict[team_name] = channel
-				elif channel_name == 'void': # special case for void channel
-					team_comms_list.append(channel_name)
-					team_comms_dict[channel_name] = channel
-				elif team_aar_i > 1: # if this exists, add it to the aar list and dict
-					team_aar_list.append(team_aar)
-					team_aar_dict[team_aar] = channel
-				elif team_disc_i > 1: # if this exists, add it to the disc list and dict
-					team_disc_list.append(team_disc)
-					team_disc_dict[team_disc] = channel
-				elif channel.type == 4: # catching all the categories
+				
+				# special case for the dev channels
+				if channel_name in ['development', 'dev-comms', 'dev2-comms', 'dev-commandtesting']:
+					dev_list.append(channel_name)
+					dev_dict[channel_name] = channel
+				if channel.type == 4: # catching all the categories
 					category_list.append(channel_name)
 					category_dict[channel_name] = channel
-				elif channel_name in public_list: # checking if it belongs in the public group
-					public_dict[channel_name] = channel
-				else:
-					if verbose:
-						print('Not in any other category so added to public:', channel_name)
-					#print(channel.type)
-					#print(type(channel.type))
-					other_list.append(channel_name)
-					other_dict[channel_name] = channel
-					#print('Not a "-comms" channel:', channel_name)
-				#if team_name in human_team_list:
-				#	team_comms_dict[team_name] = channel
+				else: # all other channels will be added to the all list and dict
+					all_list.append(channel_name)
+					all_dict[channel_name] = channel
+					if control_i > 1: # if this exists, we add it to the control list and dict
+						control_list.append(control_name)
+						control_dict[control_name] = channel
+					elif team_name_i > 1: # if this exists, add it to the list and the channel to the dict
+						team_comms_list.append(team_name)
+						team_comms_dict[team_name] = channel
+					elif channel_name == 'void': # special case for void channel
+						team_comms_list.append(channel_name)
+						team_comms_dict[channel_name] = channel
+					elif team_aar_i > 1: # if this exists, add it to the aar list and dict
+						team_aar_list.append(team_aar)
+						team_aar_dict[team_aar] = channel
+					elif team_disc_i > 1: # if this exists, add it to the disc list and dict
+						team_disc_list.append(team_disc)
+						team_disc_dict[team_disc] = channel
+					elif channel_name in public_list: # checking if it belongs in the public group
+						public_dict[channel_name] = channel
+					else:
+						if verbose:
+							print('Not in any other category so added to public:', channel_name)
+						other_list.append(channel_name)
+						other_dict[channel_name] = channel
+
 
 				
-				
-	#print("team_comms_list:", team_comms_list)
-	#print("team_comms_dict:", team_comms_dict)
-	#print("team_comms_list then _dict lens", len(team_comms_list), len(team_comms_dict))
-	#print("control_list:", control_list)
-	#print("control_dict:", control_dict)
-	#print("control_list then _dict lens", len(control_list), len(control_dict))
-	#print("public_list:", public_list)
-	#print("public_dict:", public_dict)
-	#print("public_list then _dict lens", len(public_list), len(public_dict))
-	#print("category_list:", category_list)
-	#print("category_dict:", category_dict)
-	#print("category_list then _dict lens", len(category_list), len(category_dict))
-	#print("other_list:", other_list)
-	#print("other_dict:", other_dict)
-	#print("other_list then _dict lens", len(other_list), len(other_dict))
+	#Diagnostic Messages
+	"""
+	print("team_comms_list:", team_comms_list)
+	print("team_comms_dict:", team_comms_dict)
+	print("team_comms_list then _dict lens", len(team_comms_list), len(team_comms_dict))
+	print("control_list:", control_list)
+	print("control_dict:", control_dict)
+	print("control_list then _dict lens", len(control_list), len(control_dict))
+	print("public_list:", public_list)
+	print("public_dict:", public_dict)
+	print("public_list then _dict lens", len(public_list), len(public_dict))
+	print("category_list:", category_list)
+	print("category_dict:", category_dict)
+	print("category_list then _dict lens", len(category_list), len(category_dict))
+	print("other_list:", other_list)
+	print("other_dict:", other_dict)
+	print("other_list then _dict lens", len(other_list), len(other_dict))
+	"""
 	
 
 # Get key info
@@ -455,6 +551,10 @@ Basically 2 diffrent functions, but deployed in 5 ways.
 
 To do:
 1) all comms blast
+1.1) blast
+1.2) psa
+1.3) ...?
+1.5) Fix UN -comms msg
 2) team to controller channel
 2.5) controller to team channel
 3) time-keeping
