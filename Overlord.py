@@ -97,16 +97,17 @@ async def msg(ctx, *, input_message: str):
 	to_original = to_unfmt # original message for error msgs
 	if '-comms' in to_unfmt: # stripping off '-comms' if they included it in the command
 		to_unfmt = to_unfmt[:to_unfmt.rfind('-comms')]
-	to_key = to_unfmt # For accessing the team channel dictionary
+	to, to_key = name_disambig(to_unfmt) # For accessing the team channel dictionary
 	to = to_unfmt.title()
 	message = input_message[to_i+1:].strip() # stripping off the remainder for the msg
 
-	# Getting the country's name from which 
+	# Getting the sending team's name 
 	fro_original = ctx.message.channel.name
 	fro_i = fro_original.rfind('-comms')
 	fro = fro_original[:fro_i]
-	fro = fro.title()
+	fro, fro_key = name_disambig(fro)
 
+	"""
 	# Specific country name checks:
 	# USA
 	if to.lower() in ['usa','united-states','united-states-of-america','america']:
@@ -125,22 +126,20 @@ async def msg(ctx, *, input_message: str):
 		to_key = to.lower()
 	# Global News Network
 	if to.lower() in ['gnn', 'global-news-network', 'global-news', 'global-news-corp']:
-		to_unfmt = 'gnn'
 		to = 'Global-News-Network'
 		to_key = 'gnn'
 	# Badger News Corp
 	if to.lower() in ['bnc', 'badger', 'badger-news-network', 'badger-news-corp', 'badger-news']:
-		to_unfmt = 'bnc'
 		to = 'Badger-News-Corp'
 		to_key = 'bnc'
 	# United Nations
 	if to.lower() in ['un', 'united-nations']:
-		to_unfmt = 'un'
 		to = 'United-Nations'
 		to_key = 'un'
 	# More UN comms? <======================================================================
 	# Add more of these as necessary
-
+	"""
+	
 	# Diagnostic messages
 	#print('Input message:', input_message)
 	#print("To: " + to)
@@ -149,7 +148,7 @@ async def msg(ctx, *, input_message: str):
 	#print('Input message: ' + input_message)
 
 	#Error Checking
-	if (fro_i < 1) or (fro.lower() not in team_comms_list): # not in correct channel
+	if (fro_i < 1) or (fro_key.lower() not in team_comms_list): # not in correct channel
 		#print(fro_i)
 		#print(fro.lower())
 		#print(team_comms_list)
@@ -165,7 +164,7 @@ async def msg(ctx, *, input_message: str):
 		not_team_error_msg = '"' + to_original + '"' + ' not a valid team. Try again.'
 		await client.say(not_team_error_msg)
 		return
-	if to_key == fro: # trying to send a message to oneself
+	if to_key == fro_key: # trying to send a message to oneself
 		same_team_error_msg = 'Use "' + command_prefix + 'echo" instead to send a message to the'
 		same_team_error_msg += ' same channel.'
 		await client.say(same_team_error_msg)
@@ -184,6 +183,51 @@ async def msg(ctx, *, input_message: str):
 	else:
 		confirmation_message = 'Message "' + message + '" sent to ' + to + '.'
 	await client.say(confirmation_message)
+
+# Command for a team to publish a press release
+@client.command(pass_context=True)
+async def tbd(ctx, *, input_message: str):
+	""" TBD
+	"""
+	pass
+
+
+# Function for helping sort out different possible team names
+def name_disambig(team_name):
+	""" Helper function for helping sort through ambiguous team names
+	"""
+	
+	# If nothing else, it'll return itself twice (assuming the name and key are the same and correct)
+	name = team_name
+	key = team_name
+
+	# Specific country name checks:
+	# USA
+	if name.lower() in ['usa','united-states','united-states-of-america','america']:
+		name = name.upper()
+	# UK
+	elif name.lower() in ['uk', 'united-kingdom']:
+		name = name.upper()
+	# South Africa
+	elif name.lower() == 'sa':
+		name = 'South-Africa'
+		key = name.lower()
+	# Global News Network
+	elif name.lower() in ['gnn', 'global-news-network', 'global-news', 'global-news-corp']:
+		name = 'Global-News-Network'
+		key = 'gnn'
+	# Badger News Corp
+	elif name.lower() in ['bnc', 'badger', 'badger-news-network', 'badger-news-corp', 'badger-news']:
+		name = 'Badger-News-Corp'
+		key = 'bnc'
+	# United Nations
+	elif name.lower() in ['un', 'united-nations']:
+		name = 'United-Nations'
+		key = 'un'
+	# More UN comms? <======================================================================
+	# Add more of these as necessary
+	
+	return name, key
 
 
 def update_teams(verbose=True):
