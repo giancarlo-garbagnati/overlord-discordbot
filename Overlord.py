@@ -44,10 +44,73 @@ other_dict = dict()
 #server_name = "ggtest" # change this to the name of the server you want this bot to work in
 server_name = "Watch The Skies"
 
+# Phase stuff
+current_phase_i = 0
+game_phases = [	'Pre-Game Briefing',
+				'Spring 2020 - Initial Preparation',
+				'Spring 2020 - Operations Phase',
+				'Spring 2020 - Check-in Phase',
+				'Spring 2020 - Free Phase',
+				'Summer 2020 - Operations Phase',
+				'Summer 2020 - Check-in Phase',
+				'Summer 2020 - Free Phase',
+				'Fall 2020 - Operations Phase',
+				'Fall 2020 - Check-in Phase',
+				'Fall 2020 - Free Phase',
+				'Winter 2020 - Operations Phase',
+				'Winter 2020 - Check-in Phase',
+				'Winter 2020 - Free Phase',
+				'Spring 2021 - Operations Phase',
+				'Spring 2021 - Check-in Phase',
+				'Spring 2021 - Free Phase',
+				'Summer 2021 - Operations Phase',
+				'Summer 2021 - Check-in Phase',
+				'Summer 2021 - Free Phase',
+				'Fall 2021 - Operations Phase',
+				'Fall 2021 - Check-in Phase',
+				'Fall 2021 - Free Phase',
+				'Winter 2021 - Operations Phase',
+				'Winter 2021 - Check-in Phase',
+				'Winter 2021 - Free Phase',
+				'Spring 2022 - Operations Phase',
+				'Spring 2022 - Check-in Phase',
+				'Spring 2022 - Free Phase',
+				'Summer 2022 - Operations Phase',
+				'Summer 2022 - Check-in Phase',
+				'Summer 2022 - Free Phase',
+				'Fall 2022 - Operations Phase',
+				'Fall 2022 - Check-in Phase',
+				'Fall 2022 - Free Phase',
+				'Winter 2022 - Operations Phase',
+				'Winter 2022 - Check-in Phase',
+				'Winter 2022 - Free Phase',
+				'Spring 2023 - Operations Phase',
+				'Spring 2023 - Check-in Phase',
+				'Spring 2023 - Free Phase',
+				'Summer 2023 - Operations Phase',
+				'Summer 2023 - Check-in Phase',
+				'Summer 2023 - Free Phase',
+				'Fall 2023 - Operations Phase',
+				'Fall 2023 - Check-in Phase',
+				'Fall 2023 - Free Phase',
+				'Winter 2023 - Operations Phase',
+				'Winter 2023 - Check-in Phase',
+				'Winter 2023 - Free Phase',
+				'Game End and Debrief']
+# Game phase change prepend str
+game_phase_change = "-----GAME PHASE CHANGE-----\n"
+game_start_str = "--------GAME START--------\n"
+
 # Creating the bot client
 command_prefix = '/' # this is the prefix used in front of each command
 bot_description = "Sky Watcher Bot for Watch The Skies"
 client = Bot(description=bot_description, command_prefix=command_prefix, pm_help = True)
+
+# Dev stuff
+testing = True
+disable_msg = True
+
+timekeeper_role = 'game control'
 
 # Greeting message for when a new user joins the server
 greeting_msg = """Hi {0.mention}! Welcome to the game server for Watch the Skies - Sacramento! """
@@ -165,6 +228,11 @@ async def msg(ctx, *, input_message: str):
 	fro_i = fro_original.rfind('-comms')
 	fro = fro_original[:fro_i]
 	fro, fro_key = name_disambig(fro)
+
+	if testing:
+		if disable_msg:
+			if (fro_key.lower() not in ['dev','dev2']) or (to_key.lower() not in ['dev','dev2']):
+				return
 	
 	# Diagnostic messages
 	"""
@@ -175,7 +243,7 @@ async def msg(ctx, *, input_message: str):
 	print('Input message: ' + input_message)
 	"""
 
-	#Error Checking
+	# Error Checking
 	if (fro_i < 1) or (fro_key.lower() not in team_comms_list): # not in correct channel
 		#print(fro_i)
 		#print(fro.lower())
@@ -192,7 +260,7 @@ async def msg(ctx, *, input_message: str):
 		not_team_error_msg = '"' + to_original + '"' + ' not a valid team. Try again.'
 		await client.say(not_team_error_msg)
 		return
-	if to_key == fro_key: # trying to send a message to oneself
+	if to_key.lower() == fro_key.lower(): # trying to send a message to oneself
 		same_team_error_msg = 'Use "' + command_prefix + 'echo" instead to send a message to the'
 		same_team_error_msg += ' same channel.'
 		await client.say(same_team_error_msg)
@@ -220,7 +288,7 @@ async def press_release(ctx, *, input_message: str):
 	Can only be published by someone with a @Head of State role tag
 	"""
 
-	# Get sender's name
+	# Get sender's channel/team name
 	fro_original = ctx.message.channel.name
 	fro_i = fro_original.rfind('-comms')
 	fro = fro_original[:fro_i]
@@ -239,13 +307,8 @@ async def press_release(ctx, *, input_message: str):
 	#print(user.roles)
 	"""
 
-	#input_message
-
-	#Error Checking
+	# Error Checking
 	if (fro_i < 1) or (fro_key.lower() not in team_comms_list): # not in correct channel
-		#print(fro_i)
-		#print(fro.lower())
-		#print(team_comms_list)
 		invalid_channel_error_msg = 'You cannot use this command in this channel.'
 		await client.say(invalid_channel_error_msg)
 		return
@@ -286,16 +349,10 @@ async def blast(ctx, *, input_message: str):
 	# The role tag that's allowed to use this command
 	blast_role = 'announcer'
 
-	# Get sender's name
-	fro_original = ctx.message.channel.name
-	fro_i = fro_original.rfind('-comms')
-	fro = fro_original[:fro_i]
-	fro, fro_key = name_disambig(fro)
-
 	# Get the user info for the person who wrote this command
 	user = ctx.message.author
 
-	#Error Checking
+	# Error Checking
 	if len(input_message.strip()) < 1: # missing a message
 		not_valid_msg_format = 'Not a valid message. The correct format for this command is: "'
 		not_valid_msg_format += command_prefix + 'msg COUNTRY MESSAGE".'
@@ -311,8 +368,7 @@ async def blast(ctx, *, input_message: str):
 	# Send the message to its destination
 	send_msg = input_message
 	''' send to all channels here '''
-	testing = True # if this is True, we'll restrict this command to just message dev channels
-	if testing:
+	if testing: # if this is True, we'll restrict this command to just message dev channels
 		for key, value in dev_dict.items():
 			await client.send_message(value, send_msg)
 	else: # otherwise everyone gets the message
@@ -343,16 +399,10 @@ async def psa(ctx, *, input_message: str):
 	# The role tag that's allowed to use this command
 	blast_role = 'announcer'
 
-	# Get sender's name
-	fro_original = ctx.message.channel.name
-	fro_i = fro_original.rfind('-comms')
-	fro = fro_original[:fro_i]
-	fro, fro_key = name_disambig(fro)
-
 	# Get the user info for the person who wrote this command
 	user = ctx.message.author
 
-	#Error Checking
+	# Error Checking
 	if len(input_message.strip()) < 1: # missing a message
 		not_valid_msg_format = 'Not a valid message. The correct format for this command is: "'
 		not_valid_msg_format += command_prefix + 'msg COUNTRY MESSAGE".'
@@ -368,8 +418,7 @@ async def psa(ctx, *, input_message: str):
 	# Send the message to its destination
 	send_msg = PSA_str + input_message
 	''' send to all channels here '''
-	testing = True # if this is True, we'll restrict this command to just message dev channels
-	if testing:
+	if testing: # if this is True, we'll restrict this command to just message dev channels
 		for key, value in dev_dict.items():
 			await client.send_message(value, send_msg)
 	else: # otherwise everyone gets the message
@@ -385,6 +434,434 @@ async def psa(ctx, *, input_message: str):
 	# Confirmation message for the team sending the message
 	confirmation_message = 'PSA sent successfully.'
 	await client.say(confirmation_message)
+
+
+# Command for the @Game Control to be able to make the game's phase clock move to the next phase
+@client.command(pass_context=True)
+async def next_phase(ctx):
+	""" Command to let the @Game Control move the game's phase clock forward one phase
+	"""
+
+	# Calling global variables
+	global current_phase_i
+
+	# The role tag that's allowed to use this command
+	control_role = timekeeper_role
+
+	# Get the user info for the person who wrote this command
+	user = ctx.message.author
+
+	# Error Checking
+	# Check if the user is has a @Game Control role tag
+	if control_role not in [role.name.lower() for role in user.roles]:
+		if user.name.lower() != 'pandiculate':
+			not_gamecontrol_error = 'Only a @Game Control can use this command.'
+			await client.say(not_gamecontrol_error)
+			return
+	if current_phase_i > len(game_phases):
+		last_phase_error = 'No more phases to cycle through. Use "{}reset_phase" to '.format(command_prefix)
+		last_phase_error += 'set the game back to the first phase. Alternatively, you can use '
+		last_phase_error += '"{}set_phase PHASE#" to set the phase to a specific'.format(command_prefix)
+		last_phase_error += ' phase, "{}last_phase" or "{}prev_phase"'.format(command_prefix, command_prefix)
+		last_phase_error += ' to get to the previous phase, or "{}print_phase" '.format(command_prefix)
+		last_phase_error += 'to get a list of all the phases.'
+		await client.say(last_phase_error)
+		return
+
+	# Get the current phase
+	current_phase = game_phases[current_phase_i]
+	if current_phase_i == 0:
+		send_msg = game_start_str + current_phase
+	else:
+		send_msg = game_phase_change + current_phase
+
+	# Send the message to its destination
+	''' send to all channels here '''
+	if testing: # if this is True, we'll restrict this command to just message dev channels
+		for key, value in dev_dict.items():
+			if key == 'dev-commandtesting':
+				await client.send_message(value, send_msg)
+			#await client.send_message(value, send_msg)
+	else: # otherwise everyone gets the message
+		for key, value in all_dict.items():
+			await client.send_message(value, send_msg)
+	#await client.send_message(public_dict['press-releases'], send_msg)
+
+	# Logging message for game controllers
+	log_message = 'The game has been moved to the next phase by user ' + user.name + '. Phase: "'
+	log_message += current_phase + '".'
+	print(log_message)
+
+	# Confirmation message for the team sending the message
+	#confirmation_message = 'Game moved to phase: "{}".'.format(current_phase)
+	#await client.say(confirmation_message)
+
+	# Move the phase 1 up ahead
+	change_current_phase(1)
+
+
+# Command for the @Game Control to be able to set the game's phase clock to a certain phase number
+@client.command(pass_context=True)
+async def set_phase(ctx, x: int):
+	""" Command to let the @Game Control set the game phase
+	Uses the indices of the game_phrases list
+	"""
+
+	# Calling global variables
+	global current_phase_i
+
+	# The role tag that's allowed to use this command
+	control_role = timekeeper_role
+
+	# Get the user info for the person who wrote this command
+	user = ctx.message.author
+
+	# Error Checking
+	# Check if the user is has a @Game Control role tag
+	if control_role not in [role.name.lower() for role in user.roles]:
+		if user.name.lower() != 'pandiculate':
+			not_gamecontrol_error = 'Only a @Game Control can use this command.'
+			await client.say(not_gamecontrol_error)
+			return
+
+	# Set the phase
+	set_current_phase(x)
+
+	# Get the current phase
+	current_phase = game_phases[current_phase_i]
+	if current_phase_i == 0:
+		send_msg = game_start_str + current_phase
+	else:
+		send_msg = game_phase_change + current_phase
+
+	# Send the message to its destination
+	''' send to all channels here '''
+	if testing: # if this is True, we'll restrict this command to just message dev channels
+		for key, value in dev_dict.items():
+			if key == 'dev-commandtesting':
+				await client.send_message(value, send_msg)
+			#await client.send_message(value, send_msg)
+	else: # otherwise everyone gets the message
+		for key, value in all_dict.items():
+			await client.send_message(value, send_msg)
+	#await client.send_message(public_dict['press-releases'], send_msg)
+
+	# Logging message for game controllers
+	log_message = 'The game has been set by user ' + user.name + ' to phase: "'
+	log_message += current_phase + '".'
+	print(log_message)
+
+
+# Command for the @Game Control to be able to make the game's phase clock back to the previous phase
+@client.command(pass_context=True)
+async def prev_phase(ctx):
+	""" Command to let the @Game Control move the game's phase clock back one phase
+	"""
+
+	# Calling global variables
+	global current_phase_i
+
+	# The role tag that's allowed to use this command
+	control_role = timekeeper_role
+
+	# Get the user info for the person who wrote this command
+	user = ctx.message.author
+
+	# Error Checking
+	# Check if the user is has a @Game Control role tag
+	if control_role not in [role.name.lower() for role in user.roles]:
+		if user.name.lower() != 'pandiculate':
+			not_gamecontrol_error = 'Only a @Game Control can use this command.'
+			await client.say(not_gamecontrol_error)
+			return
+	if current_phase_i <= 0:
+		first_phase_error = 'No more phases to reverse through. Use "{}next_phase" to '.format(command_prefix)
+		first_phase_error += 'go forward one phase. Alternatively, you cna use '
+		first_phase_error += '"{}set_phase PHASE#" to set the phase to a specific'.format(command_prefix)
+		first_phase_error += ' phase or "{}print_phase" to get a list of all the'.format(command_prefix)
+		first_phase_error += ' phases.'
+		await client.say(first_phase_error)
+		return
+
+	# Get the current phase
+	current_phase = game_phases[current_phase_i]
+	if current_phase_i == 0:
+		send_msg = game_start_str + current_phase
+	else:
+		send_msg = game_phase_change + current_phase
+
+	# Send the message to its destination
+	''' send to all channels here '''
+	if testing: # if this is True, we'll restrict this command to just message dev channels
+		for key, value in dev_dict.items():
+			if key == 'dev-commandtesting':
+				await client.send_message(value, send_msg)
+			#await client.send_message(value, send_msg)
+	else: # otherwise everyone gets the message
+		for key, value in all_dict.items():
+			await client.send_message(value, send_msg)
+	#await client.send_message(public_dict['press-releases'], send_msg)
+
+	# Logging message for game controllers
+	log_message = 'The game has been moved to the previous phase by user ' + user.name + '. Phase: "'
+	log_message += current_phase + '".'
+	print(log_message)
+
+	# Confirmation message for the team sending the message
+	#confirmation_message = 'Game moved to phase: "{}".'.format(current_phase)
+	#await client.say(confirmation_message)
+
+	# Move the phase 1 back
+	change_current_phase(-1)
+
+# Command for the @Game Control to be able to make the game's phase clock back to the previous phase
+@client.command(pass_context=True)
+async def last_phase(ctx):
+	""" Command to let the @Game Control move the game's phase clock back one phase
+	"""
+
+	# Calling global variables
+	global current_phase_i
+
+	# The role tag that's allowed to use this command
+	control_role = timekeeper_role
+
+	# Get the user info for the person who wrote this command
+	user = ctx.message.author
+
+	# Error Checking
+	# Check if the user is has a @Game Control role tag
+	if control_role not in [role.name.lower() for role in user.roles]:
+		if user.name.lower() != 'pandiculate':
+			not_gamecontrol_error = 'Only a @Game Control can use this command.'
+			await client.say(not_gamecontrol_error)
+			return
+	if current_phase_i <= 0:
+		first_phase_error = 'No more phases to reverse through. Use "{}next_phase" to '.format(command_prefix)
+		first_phase_error += 'go forward one phase. Alternatively, you cna use '
+		first_phase_error += '"{}set_phase PHASE#" to set the phase to a specific'.format(command_prefix)
+		first_phase_error += ' phase or "{}print_phase" to get a list of all the'.format(command_prefix)
+		first_phase_error += ' phases.'
+		await client.say(first_phase_error)
+		return
+
+	# Get the current phase
+	current_phase = game_phases[current_phase_i]
+	if current_phase_i == 0:
+		send_msg = game_start_str + current_phase
+	else:
+		send_msg = game_phase_change + current_phase
+
+	# Send the message to its destination
+	''' send to all channels here '''
+	if testing: # if this is True, we'll restrict this command to just message dev channels
+		for key, value in dev_dict.items():
+			if key == 'dev-commandtesting':
+				await client.send_message(value, send_msg)
+			#await client.send_message(value, send_msg)
+	else: # otherwise everyone gets the message
+		for key, value in all_dict.items():
+			await client.send_message(value, send_msg)
+	#await client.send_message(public_dict['press-releases'], send_msg)
+
+	# Logging message for game controllers
+	log_message = 'The game has been moved to the previous phase by user ' + user.name + '. Phase: "'
+	log_message += current_phase + '".'
+	print(log_message)
+
+	# Confirmation message for the team sending the message
+	#confirmation_message = 'Game moved to phase: "{}".'.format(current_phase)
+	#await client.say(confirmation_message)
+
+	# Move the phase 1 back
+	change_current_phase(-1)
+
+# Command for the @Game Control to be able to reset the game's phase clock to the beginning
+@client.command(pass_context=True)
+async def reset_phase(ctx):
+	""" Command to let the @Game Control reset the game phase to the first phase
+	"""
+
+	# Calling global variables
+	global current_phase_i
+
+	# The role tag that's allowed to use this command
+	control_role = timekeeper_role
+
+	# Get the user info for the person who wrote this command
+	user = ctx.message.author
+
+	# Error Checking
+	# Check if the user is has a @Game Control role tag
+	if control_role not in [role.name.lower() for role in user.roles]:
+		if user.name.lower() != 'pandiculate':
+			not_gamecontrol_error = 'Only a @Game Control can use this command.'
+			await client.say(not_gamecontrol_error)
+			return
+
+	# Set the phase
+	set_current_phase(0)
+
+	# Get the current phase
+	current_phase = game_phases[current_phase_i]
+	if current_phase_i == 0:
+		send_msg = game_start_str + current_phase
+	else:
+		send_msg = game_phase_change + current_phase
+
+	# Send the message to its destination
+	''' send to all channels here '''
+	if testing: # if this is True, we'll restrict this command to just message dev channels
+		for key, value in dev_dict.items():
+			if key == 'dev-commandtesting':
+				await client.send_message(value, send_msg)
+			#await client.send_message(value, send_msg)
+	else: # otherwise everyone gets the message
+		for key, value in all_dict.items():
+			await client.send_message(value, send_msg)
+	#await client.send_message(public_dict['press-releases'], send_msg)
+
+	# Logging message for game controllers
+	log_message = 'The game has been reset to the first phase by user ' + user.name + '."'
+	print(log_message)
+
+
+# Command for the @Game Control to be able to set the game's phase clock to the end phase
+@client.command(pass_context=True)
+async def end_phase(ctx):
+	""" Command to let the @Game Control set the game phase clock to the end phase
+	"""
+
+	# Calling global variables
+	global current_phase_i
+
+	# The role tag that's allowed to use this command
+	control_role = timekeeper_role
+
+	# Get the user info for the person who wrote this command
+	user = ctx.message.author
+
+	# Error Checking
+	# Check if the user is has a @Game Control role tag
+	if control_role not in [role.name.lower() for role in user.roles]:
+		if user.name.lower() != 'pandiculate':
+			not_gamecontrol_error = 'Only a @Game Control can use this command.'
+			await client.say(not_gamecontrol_error)
+			return
+
+	# Set the phase
+	set_current_phase(len(game_phases)-1)
+
+	# Get the current phase
+	current_phase = game_phases[current_phase_i]
+	if current_phase_i == 0:
+		send_msg = game_start_str + current_phase
+	else:
+		send_msg = game_phase_change + current_phase
+
+	# Send the message to its destination
+	''' send to all channels here '''
+	if testing: # if this is True, we'll restrict this command to just message dev channels
+		for key, value in dev_dict.items():
+			if key == 'dev-commandtesting':
+				await client.send_message(value, send_msg)
+			#await client.send_message(value, send_msg)
+	else: # otherwise everyone gets the message
+		for key, value in all_dict.items():
+			await client.send_message(value, send_msg)
+	#await client.send_message(public_dict['press-releases'], send_msg)
+
+	# Logging message for game controllers
+	log_message = 'The game has been set to the last phase by user ' + user.name + '."'
+	print(log_message)
+
+# Command for the @Game Control to display the current phase in the channel the command was used in
+@client.command(pass_context=True)
+async def what_phase(ctx):
+	""" Command to let the @Game Control get a reminder what phase the game is in.
+	This will get seen only in the channel the @Game Controller used it in
+	"""
+
+	# Calling global variables
+	global current_phase_i
+
+	# The role tag that's allowed to use this command
+	control_role = timekeeper_role
+
+	# Get the user info for the person who wrote this command
+	user = ctx.message.author
+
+	# Error Checking
+	# Check if the user is has a @Game Control role tag
+	if control_role not in [role.name.lower() for role in user.roles]:
+		if user.name.lower() != 'pandiculate':
+			not_gamecontrol_error = 'Only a @Game Control can use this command.'
+			await client.say(not_gamecontrol_error)
+			return
+
+	# Get the current phase
+	current_phase = game_phases[current_phase_i]
+
+	# Send the message to the channel it was used in
+	send_msg = 'We are in phase: "{}".'.format(current_phase)
+	await client.say(send_msg)
+
+# Command for @Game Control to display a list of all the phase in the game, with the index used to
+# access it.
+@client.command(pass_context=True)
+async def list_phase(ctx):
+	""" Command for the @Game Controller to be able to get displayed a list of all the game phases
+	with the index needed to access it
+	"""
+
+	# The role that's allowed to use this command
+	control_role = timekeeper_role
+
+	# Get the user info for the person who wrote this command
+	user = ctx.message.author
+
+	# Error Checking
+	# Check if the user is has a @Game Control role tag
+	if control_role not in [role.name.lower() for role in user.roles]:
+		if user.name.lower() != 'pandiculate':
+			not_gamecontrol_error = 'Only a @Game Control can use this command.'
+			await client.say(not_gamecontrol_error)
+			return
+	
+	# Get the current phase
+	current_phase = game_phases[current_phase_i]
+
+	# Build the phase list output
+	send_msg = "```"
+	for i, phase in enumerate(game_phases):
+		if current_phase_i == i:
+			phase_str = '{} - {} <---- we are here\n'
+		else:
+			phase_str = '{} - {}\n'
+		send_msg += phase_str
+	send_msg += "```"
+
+	# Send the message to the channel the command was used in
+	await client.say(send_msg)
+
+
+
+
+
+# PHASE FXNS GO HERE
+# /list_phase
+
+# Helper functions for changing the current_phase_i iterator
+def change_current_phase(x):
+	""" Function for incrementing or decrementing the current_phase_i by x
+	"""
+	global current_phase_i
+	current_phase_i += x
+def set_current_phase(x):
+	""" Function for setting the current_phase_i to x
+	"""
+	global current_phase_i
+	current_phase_i = x
 
 # Function for helping sort out different possible team names
 def name_disambig(team_name):
@@ -544,19 +1021,22 @@ Basically 2 diffrent functions, but deployed in 5 ways.
 """
 
 To do:
-1) all comms blast
-1.3) ...?
+1) PHASES
+1.1) Change testing to @dev tag people
 1.5) Fix UN -comms msg
+1.55) Write-up google docs documentation
 2) team to controller channel
 2.5) controller to team channel
 3) time-keeping
 4) dynamically adding new teams
+3.5) change things to use the flag emoji
 5) look into using @ tags
 
 Done (but testing):
 1) all comms blast
 1.1) blast
 1.2) psa
+1.3) test with @announcer tag
 
 
 """
