@@ -46,7 +46,8 @@ server_name = "Watch The Skies"
 
 # Phase stuff
 current_phase_i = 0
-game_phases = [	'Pre-Game Briefing',
+game_phases = [	'Pre-Pre-Game',
+				'Pre-Game Briefing',
 				'Spring 2020 - Initial Preparation',
 				'Spring 2020 - Operations Phase',
 				'Spring 2020 - Check-in Phase',
@@ -443,13 +444,20 @@ async def next_phase(ctx):
 	"""
 
 	# Calling global variables
-	global current_phase_i
+	#global current_phase_i
 
 	# The role tag that's allowed to use this command
 	control_role = timekeeper_role
 
 	# Get the user info for the person who wrote this command
 	user = ctx.message.author
+
+	# Dev stuff
+	"""
+	print('current_phase_i:', current_phase_i)
+	print('new phase:', current_phase_i+1)
+	print('max game phases:', len(game_phases)-1)
+	"""
 
 	# Error Checking
 	# Check if the user is has a @Game Control role tag
@@ -458,19 +466,22 @@ async def next_phase(ctx):
 			not_gamecontrol_error = 'Only a @Game Control can use this command.'
 			await client.say(not_gamecontrol_error)
 			return
-	if current_phase_i > len(game_phases):
-		last_phase_error = 'No more phases to cycle through. Use "{}reset_phase" to '.format(command_prefix)
-		last_phase_error += 'set the game back to the first phase. Alternatively, you can use '
-		last_phase_error += '"{}set_phase PHASE#" to set the phase to a specific'.format(command_prefix)
-		last_phase_error += ' phase, "{}last_phase" or "{}prev_phase"'.format(command_prefix, command_prefix)
-		last_phase_error += ' to get to the previous phase, or "{}print_phase" '.format(command_prefix)
+	if current_phase_i+1 >= len(game_phases):
+		last_phase_error = 'No more phases to cycle through. Use `{}reset_phase` to '.format(command_prefix)
+		last_phase_error += 'set the game back to the first phase.\nAlternatively, you can use '
+		last_phase_error += '`{}set_phase PHASENUMBER` to set the phase to a specific'.format(command_prefix)
+		last_phase_error += ' phase, `{}last_phase` or `{}prev_phase`'.format(command_prefix, command_prefix)
+		last_phase_error += ' to get to the previous phase, or `{}list_phase` '.format(command_prefix)
 		last_phase_error += 'to get a list of all the phases.'
 		await client.say(last_phase_error)
 		return
 
+	# Move the phase 1 up ahead
+	change_current_phase(1)
+
 	# Get the current phase
 	current_phase = game_phases[current_phase_i]
-	if current_phase_i == 0:
+	if current_phase_i == 1:
 		send_msg = game_start_str + current_phase
 	else:
 		send_msg = game_phase_change + current_phase
@@ -496,9 +507,6 @@ async def next_phase(ctx):
 	#confirmation_message = 'Game moved to phase: "{}".'.format(current_phase)
 	#await client.say(confirmation_message)
 
-	# Move the phase 1 up ahead
-	change_current_phase(1)
-
 
 # Command for the @Game Control to be able to set the game's phase clock to a certain phase number
 @client.command(pass_context=True)
@@ -508,7 +516,7 @@ async def set_phase(ctx, x: int):
 	"""
 
 	# Calling global variables
-	global current_phase_i
+	#global current_phase_i
 
 	# The role tag that's allowed to use this command
 	control_role = timekeeper_role
@@ -527,7 +535,7 @@ async def set_phase(ctx, x: int):
 	# Set the phase
 	set_current_phase(x)
 
-	# Get the current phase
+	# Get the new phase
 	current_phase = game_phases[current_phase_i]
 	if current_phase_i == 0:
 		send_msg = game_start_str + current_phase
@@ -559,7 +567,7 @@ async def prev_phase(ctx):
 	"""
 
 	# Calling global variables
-	global current_phase_i
+	#global current_phase_i
 
 	# The role tag that's allowed to use this command
 	control_role = timekeeper_role
@@ -575,15 +583,18 @@ async def prev_phase(ctx):
 			await client.say(not_gamecontrol_error)
 			return
 	if current_phase_i <= 0:
-		first_phase_error = 'No more phases to reverse through. Use "{}next_phase" to '.format(command_prefix)
-		first_phase_error += 'go forward one phase. Alternatively, you cna use '
-		first_phase_error += '"{}set_phase PHASE#" to set the phase to a specific'.format(command_prefix)
-		first_phase_error += ' phase or "{}print_phase" to get a list of all the'.format(command_prefix)
+		first_phase_error = 'No more phases to reverse through. Use `{}next_phase` to '.format(command_prefix)
+		first_phase_error += 'go forward one phase.\nAlternatively, you can use '
+		first_phase_error += '`{}set_phase PHASENUMBER` to set the phase to a specific'.format(command_prefix)
+		first_phase_error += ' phase or `{}list_phase` to get a list of all the'.format(command_prefix)
 		first_phase_error += ' phases.'
 		await client.say(first_phase_error)
 		return
 
-	# Get the current phase
+	# Move the phase 1 back
+	change_current_phase(-1)
+
+	# Get the new phase
 	current_phase = game_phases[current_phase_i]
 	if current_phase_i == 0:
 		send_msg = game_start_str + current_phase
@@ -611,8 +622,6 @@ async def prev_phase(ctx):
 	#confirmation_message = 'Game moved to phase: "{}".'.format(current_phase)
 	#await client.say(confirmation_message)
 
-	# Move the phase 1 back
-	change_current_phase(-1)
 
 # Command for the @Game Control to be able to make the game's phase clock back to the previous phase
 @client.command(pass_context=True)
@@ -621,7 +630,7 @@ async def last_phase(ctx):
 	"""
 
 	# Calling global variables
-	global current_phase_i
+	#global current_phase_i
 
 	# The role tag that's allowed to use this command
 	control_role = timekeeper_role
@@ -637,15 +646,18 @@ async def last_phase(ctx):
 			await client.say(not_gamecontrol_error)
 			return
 	if current_phase_i <= 0:
-		first_phase_error = 'No more phases to reverse through. Use "{}next_phase" to '.format(command_prefix)
-		first_phase_error += 'go forward one phase. Alternatively, you cna use '
-		first_phase_error += '"{}set_phase PHASE#" to set the phase to a specific'.format(command_prefix)
-		first_phase_error += ' phase or "{}print_phase" to get a list of all the'.format(command_prefix)
+		first_phase_error = 'No more phases to reverse through. Use `{}next_phase` to '.format(command_prefix)
+		first_phase_error += 'go forward one phase.\nAlternatively, you can use '
+		first_phase_error += '`{}set_phase PHASENUMBER` to set the phase to a specific'.format(command_prefix)
+		first_phase_error += ' phase or `{}list_phase` to get a list of all the'.format(command_prefix)
 		first_phase_error += ' phases.'
 		await client.say(first_phase_error)
 		return
 
-	# Get the current phase
+	# Move the phase 1 back
+	change_current_phase(-1)
+
+	# Get the new phase
 	current_phase = game_phases[current_phase_i]
 	if current_phase_i == 0:
 		send_msg = game_start_str + current_phase
@@ -673,9 +685,6 @@ async def last_phase(ctx):
 	#confirmation_message = 'Game moved to phase: "{}".'.format(current_phase)
 	#await client.say(confirmation_message)
 
-	# Move the phase 1 back
-	change_current_phase(-1)
-
 # Command for the @Game Control to be able to reset the game's phase clock to the beginning
 @client.command(pass_context=True)
 async def reset_phase(ctx):
@@ -683,7 +692,7 @@ async def reset_phase(ctx):
 	"""
 
 	# Calling global variables
-	global current_phase_i
+	#global current_phase_i
 
 	# The role tag that's allowed to use this command
 	control_role = timekeeper_role
@@ -703,23 +712,10 @@ async def reset_phase(ctx):
 	set_current_phase(0)
 
 	# Get the current phase
-	current_phase = game_phases[current_phase_i]
-	if current_phase_i == 0:
-		send_msg = game_start_str + current_phase
-	else:
-		send_msg = game_phase_change + current_phase
+	send_msg = 'Game phase have been reset'
 
-	# Send the message to its destination
-	''' send to all channels here '''
-	if testing: # if this is True, we'll restrict this command to just message dev channels
-		for key, value in dev_dict.items():
-			if key == 'dev-commandtesting':
-				await client.send_message(value, send_msg)
-			#await client.send_message(value, send_msg)
-	else: # otherwise everyone gets the message
-		for key, value in all_dict.items():
-			await client.send_message(value, send_msg)
-	#await client.send_message(public_dict['press-releases'], send_msg)
+	# Send the message to the channel the command was called from
+	await client.say(send_msg)
 
 	# Logging message for game controllers
 	log_message = 'The game has been reset to the first phase by user ' + user.name + '."'
@@ -733,7 +729,7 @@ async def end_phase(ctx):
 	"""
 
 	# Calling global variables
-	global current_phase_i
+	#global current_phase_i
 
 	# The role tag that's allowed to use this command
 	control_role = timekeeper_role
@@ -783,7 +779,7 @@ async def what_phase(ctx):
 	"""
 
 	# Calling global variables
-	global current_phase_i
+	#global current_phase_i
 
 	# The role tag that's allowed to use this command
 	control_role = timekeeper_role
@@ -835,9 +831,9 @@ async def list_phase(ctx):
 	send_msg = "```"
 	for i, phase in enumerate(game_phases):
 		if current_phase_i == i:
-			phase_str = '{} - {} <---- we are here\n'
+			phase_str = '{} - {} <---- we are here\n'.format(i, phase)
 		else:
-			phase_str = '{} - {}\n'
+			phase_str = '{} - {}\n'.format(i, phase)
 		send_msg += phase_str
 	send_msg += "```"
 
@@ -1022,7 +1018,6 @@ Basically 2 diffrent functions, but deployed in 5 ways.
 
 To do:
 1) PHASES
-1.1) Change testing to @dev tag people
 1.5) Fix UN -comms msg
 1.55) Write-up google docs documentation
 2) team to controller channel
@@ -1037,6 +1032,8 @@ Done (but testing):
 1.1) blast
 1.2) psa
 1.3) test with @announcer tag
+2) Phases Commands
+
 
 
 """
