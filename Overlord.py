@@ -119,6 +119,8 @@ greeting_msg += """Please tell us what team are you on, and what role will you b
 greeting_msg += """can give you access to your play area."""
 
 ###################################################################################################
+# Events
+###################################################################################################
 
 # This is what loads when the bot starts up
 @client.event
@@ -159,6 +161,9 @@ async def on_member_join(member):
 	#await client.send_message(member, welcome_msg.format(member, server))
 	#await client.send_message(client.get_channel(log_channel_id), "{0.name} has joined".format(member))
 
+###################################################################################################
+# Basic commands (not WtS specific)
+###################################################################################################
 
 # Basic ping command
 @client.command()
@@ -205,6 +210,9 @@ async def roll(dice : str, mod : int = 0):
 	#result = ', '.join(str(random.randint(1, limit)) for r in range(rolls))
 	await client.say(result_message)
 
+###################################################################################################
+# Player Commands
+###################################################################################################
 
 # Messaging function to send a message from one team (channel) to another
 @client.command(pass_context=True)
@@ -339,6 +347,9 @@ async def press_release(ctx, *, input_message: str):
 	confirmation_message = 'Press release published successfully.'
 	await client.say(confirmation_message)
 
+###################################################################################################
+# Game Controller Commands
+###################################################################################################
 
 # Command for control to be able to blast a message to all channels
 @client.command(pass_context=True)
@@ -437,6 +448,11 @@ async def psa(ctx, *, input_message: str):
 	await client.say(confirmation_message)
 
 
+
+###################################################################################################
+# Phase Commmands (also only game control commands)
+###################################################################################################
+
 # Command for the @Game Control to be able to make the game's phase clock move to the next phase
 @client.command(pass_context=True)
 async def next_phase(ctx):
@@ -467,12 +483,14 @@ async def next_phase(ctx):
 			await client.say(not_gamecontrol_error)
 			return
 	if current_phase_i+1 >= len(game_phases):
-		last_phase_error = 'No more phases to cycle through. Use `{}reset_phase` to '.format(command_prefix)
-		last_phase_error += 'set the game back to the first phase.\nAlternatively, you can use '
-		last_phase_error += '`{}set_phase PHASENUMBER` to set the phase to a specific'.format(command_prefix)
-		last_phase_error += ' phase, `{}last_phase` or `{}prev_phase`'.format(command_prefix, command_prefix)
-		last_phase_error += ' to get to the previous phase, or `{}list_phase` '.format(command_prefix)
-		last_phase_error += 'to get a list of all the phases.'
+		last_phase_error = 'No more phases to cycle through. Use `{}'.format(command_prefix)
+		last_phase_error += 'reset_phase` to set the game back to the first phase.\n'
+		last_phase_error += 'Alternatively, you can use `{}set_phase '.format(command_prefix)
+		last_phase_error += 'PHASENUMBER` to set the phase to a specific phase, `'
+		last_phase_error += '{}last_phase` or `{}'.format(command_prefix, command_prefix)
+		last_phase_error += 'prev_phase` to get to the previous phase, or `'
+		last_phase_error += '{}list_phase` to get a list of all the'.format(command_prefix)
+		last_phase_error += ' phases.'
 		await client.say(last_phase_error)
 		return
 
@@ -560,7 +578,8 @@ async def set_phase(ctx, x: int):
 	print(log_message)
 
 
-# Command for the @Game Control to be able to make the game's phase clock back to the previous phase
+# Command for the @Game Control to be able to make the game's phase clock back to the previous
+# phase
 @client.command(pass_context=True)
 async def prev_phase(ctx):
 	""" Command to let the @Game Control move the game's phase clock back one phase
@@ -583,11 +602,11 @@ async def prev_phase(ctx):
 			await client.say(not_gamecontrol_error)
 			return
 	if current_phase_i <= 0:
-		first_phase_error = 'No more phases to reverse through. Use `{}next_phase` to '.format(command_prefix)
-		first_phase_error += 'go forward one phase.\nAlternatively, you can use '
-		first_phase_error += '`{}set_phase PHASENUMBER` to set the phase to a specific'.format(command_prefix)
-		first_phase_error += ' phase or `{}list_phase` to get a list of all the'.format(command_prefix)
-		first_phase_error += ' phases.'
+		first_phase_error = 'No more phases to reverse through. Use `{}'.format(command_prefix)
+		first_phase_error += 'next_phase` to go forward one phase.\nAlternatively, you can use '
+		first_phase_error += '`{}set_phase PHASENUMBER` to set the phase'.format(command_prefix)
+		first_phase_error += ' to a specific phase or `{}list_phase` to '.format(command_prefix)
+		first_phase_error += 'get a list of all the phases.'
 		await client.say(first_phase_error)
 		return
 
@@ -614,8 +633,8 @@ async def prev_phase(ctx):
 	#await client.send_message(public_dict['press-releases'], send_msg)
 
 	# Logging message for game controllers
-	log_message = 'The game has been moved to the previous phase by user ' + user.name + '. Phase: "'
-	log_message += current_phase + '".'
+	log_message = 'The game has been moved to the previous phase by user ' + user.name
+	log_message += '. Phase: "' + current_phase + '".'
 	print(log_message)
 
 	# Confirmation message for the team sending the message
@@ -623,7 +642,8 @@ async def prev_phase(ctx):
 	#await client.say(confirmation_message)
 
 
-# Command for the @Game Control to be able to make the game's phase clock back to the previous phase
+# Command for the @Game Control to be able to make the game's phase clock back to the previous 
+# phase
 @client.command(pass_context=True)
 async def last_phase(ctx):
 	""" Command to let the @Game Control move the game's phase clock back one phase
@@ -646,11 +666,11 @@ async def last_phase(ctx):
 			await client.say(not_gamecontrol_error)
 			return
 	if current_phase_i <= 0:
-		first_phase_error = 'No more phases to reverse through. Use `{}next_phase` to '.format(command_prefix)
-		first_phase_error += 'go forward one phase.\nAlternatively, you can use '
-		first_phase_error += '`{}set_phase PHASENUMBER` to set the phase to a specific'.format(command_prefix)
-		first_phase_error += ' phase or `{}list_phase` to get a list of all the'.format(command_prefix)
-		first_phase_error += ' phases.'
+		first_phase_error = 'No more phases to reverse through. Use `{}'.format(command_prefix)
+		first_phase_error += 'next_phase` to go forward one phase.\nAlternatively, you can use '
+		first_phase_error += '`{}set_phase PHASENUMBER` to set the phase '.format(command_prefix)
+		first_phase_error += 'to a specific phase or `{}list_phase` to '.format(command_prefix)
+		first_phase_error += 'get a list of all the phases.'
 		await client.say(first_phase_error)
 		return
 
@@ -677,8 +697,8 @@ async def last_phase(ctx):
 	#await client.send_message(public_dict['press-releases'], send_msg)
 
 	# Logging message for game controllers
-	log_message = 'The game has been moved to the previous phase by user ' + user.name + '. Phase: "'
-	log_message += current_phase + '".'
+	log_message = 'The game has been moved to the previous phase by user ' + user.name
+	log_message += '. Phase: "' + current_phase + '".'
 	print(log_message)
 
 	# Confirmation message for the team sending the message
@@ -844,8 +864,9 @@ async def list_phase(ctx):
 
 
 
-# PHASE FXNS GO HERE
-# /list_phase
+###################################################################################################
+# Helper Functions
+###################################################################################################
 
 # Helper functions for changing the current_phase_i iterator
 def change_current_phase(x):
@@ -862,16 +883,19 @@ def set_current_phase(x):
 # Function for helping sort out different possible team names
 def name_disambig(team_name):
 	""" Helper function for helping sort through ambiguous team names.
-	Returns tuple of 2 str: a 'proper' team name, and a key to access channels in the various dictionaries
+	Returns tuple of 2 str: a 'proper' team name, and a key to access channels in the various 
+	dictionaries
 	"""
 	
-	# If nothing else, it'll return itself twice (assuming the name and key are the same and correct)
+	# If nothing else, it'll return itself twice (assuming the name and key are the same and 
+	# correct)
 	name = team_name.replace('_','-')
 	key = team_name
 
 	# Specific country name checks:
 	# USA
-	if name.lower() in ['usa', 'united-states', 'united-states-of-america', 'america', "'murica", 'murica']:
+	if name.lower() in ['usa', 'united-states', 'united-states-of-america', 'america', "'murica", 
+						'murica']:
 		name = 'USA'
 		key = 'usa'
 	# UK
@@ -887,7 +911,8 @@ def name_disambig(team_name):
 		name = 'Global-News-Network'
 		key = 'gnn'
 	# Badger News Corp
-	elif name.lower() in ['bnc', 'badger', 'badger-news-network', 'badger-news-corp', 'badger-news']:
+	elif name.lower() in ['bnc', 'badger', 'badger-news-network', 'badger-news-corp', 
+						  'badger-news']:
 		name = 'Badger-News-Corp'
 		key = 'bnc'
 	# United Nations
@@ -928,7 +953,8 @@ def update_teams(verbose=True):
 				team_disc = channel_name[:team_disc_i]
 				
 				# special case for the dev channels
-				if channel_name in ['development', 'dev-comms', 'dev2-comms', 'dev-commandtesting']:
+				if channel_name in ['development', 'dev-comms', 'dev2-comms', 
+									'dev-commandtesting']:
 					dev_list.append(channel_name)
 					dev_dict[channel_name] = channel
 				if channel.type == 4: # catching all the categories
@@ -940,7 +966,8 @@ def update_teams(verbose=True):
 					if control_i > 1: # if this exists, we add it to the control list and dict
 						control_list.append(control_name)
 						control_dict[control_name] = channel
-					elif team_name_i > 1: # if this exists, add it to the list and the channel to the dict
+					 # if this exists, add it to the list and the channel to the dict
+					elif team_name_i > 1:
 						team_comms_list.append(team_name)
 						team_comms_dict[team_name] = channel
 					elif channel_name == 'void': # special case for void channel
@@ -981,6 +1008,10 @@ def update_teams(verbose=True):
 	print("other_list then _dict lens", len(other_list), len(other_dict))
 	"""
 	
+###################################################################################################
+# Other
+###################################################################################################
+
 
 # Get key info
 login_path = "local/botkey"
@@ -1017,15 +1048,16 @@ Basically 2 diffrent functions, but deployed in 5 ways.
 """
 
 To do:
-1) PHASES
 1.5) Fix UN -comms msg
 1.55) Write-up google docs documentation
+1.7) fakemsg
 2) team to controller channel
 2.5) controller to team channel
 3) time-keeping
 4) dynamically adding new teams
-3.5) change things to use the flag emoji
-5) look into using @ tags
+5)
+5.5) change things to use the flag emoji
+6) look into using @ tags
 
 Done (but testing):
 1) all comms blast
