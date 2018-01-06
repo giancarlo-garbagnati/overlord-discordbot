@@ -140,11 +140,10 @@ async def on_ready():
 		  format(client.user.id))
 	print('--------')
 	
-	update_teams()
+	update_teams(verbose=False)
 	print("Team channel list and dictionary initialized.")
 	#print(team_comms_dict)
 	print("##############################")
-
 
 	#await client.send_message(team_comms_dict[to_key.lower()], send_msg)
 
@@ -218,8 +217,8 @@ async def roll(dice : str, mod : int = 0):
 @client.command(pass_context=True)
 async def msg(ctx, *, input_message: str):
 	""" Sends a message to another (valid) team's private channel.
-	Use format: "/msg DESTINATION MESSAGE", with '-' in place of spaces in the DESTINATION
-	(spaces are fine to use in the MESSAGE portion of this command)
+	Use format: "/msg [DESTINATION] [MESSAGE]", with '-' in place of spaces in the [DESTINATION]
+	(spaces are fine to use in the [MESSAGE] portion of this command)
 	"""
 
 	# Parse out the name of the destination country from the message
@@ -262,7 +261,7 @@ async def msg(ctx, *, input_message: str):
 		return
 	if to_i < 1: # missing a message
 		not_valid_msg_format = 'Not a valid message. The correct format for this command is: "'
-		not_valid_msg_format += command_prefix + 'msg COUNTRY MESSAGE".'
+		not_valid_msg_format += command_prefix + 'msg [DESTINATION] [MESSAGE]".'
 		await client.say(not_valid_msg_format)
 		return
 	if to_key.lower() not in team_comms_list: # trying to send to invalid team
@@ -284,9 +283,9 @@ async def msg(ctx, *, input_message: str):
 
 	# Confirmation message for the team sending the message
 	if to.lower() == 'void': # special case for the void'
-		confirmation_message = 'Message "' + message + '" sent to the ' + to + '.'
+		confirmation_message = 'Message successfully sent to the ' + to + '.'
 	else:
-		confirmation_message = 'Message "' + message + '" sent to ' + to + '.'
+		confirmation_message = 'Message successfully sent to ' + to + '.'
 	await client.say(confirmation_message)
 
 
@@ -323,7 +322,7 @@ async def press_release(ctx, *, input_message: str):
 		return
 	if len(input_message.strip()) < 1: # missing a message
 		not_valid_msg_format = 'Not a valid message. The correct format for this command is: "'
-		not_valid_msg_format += command_prefix + 'press_release MESSAGE".'
+		not_valid_msg_format += command_prefix + 'press_release [MESSAGE]".'
 		await client.say(not_valid_msg_format)
 		return
 	# Check if the user is a head-of-state. This command can only be used by heads-of-state
@@ -367,12 +366,17 @@ async def blast(ctx, *, input_message: str):
 	# Error Checking
 	if len(input_message.strip()) < 1: # missing a message
 		not_valid_msg_format = 'Not a valid message. The correct format for this command is: "'
-		not_valid_msg_format += command_prefix + 'msg COUNTRY MESSAGE".'
+		not_valid_msg_format += command_prefix + 'blast [MESSAGE]".'
 		await client.say(not_valid_msg_format)
 		return
 	# Check if the user is has a @announcer role tag
 	if blast_role not in [role.name.lower() for role in user.roles]:
-		if user.name.lower() != 'pandiculate':
+		if testing:
+			if user.name.lower() != 'pandiculate':
+				not_announcer_error = 'Only an @Announcer can use this command.'
+				await client.say(not_announcer_error)
+				return
+		else:
 			not_announcer_error = 'Only an @Announcer can use this command.'
 			await client.say(not_announcer_error)
 			return
@@ -396,6 +400,7 @@ async def blast(ctx, *, input_message: str):
 	# Confirmation message for the team sending the message
 	confirmation_message = 'Blast announcement sent successfully.'
 	await client.say(confirmation_message)
+
 
 # Command for control to send a PSA to all channels (differs from the blast command as it'll prepend 
 # the message with a 'PSA'-like string)
@@ -422,10 +427,16 @@ async def psa(ctx, *, input_message: str):
 		return
 	# Check if the user is has a @announcer role tag
 	if blast_role not in [role.name.lower() for role in user.roles]:
-		if user.name.lower() != 'pandiculate':
+		if testing:
+			if user.name.lower() != 'pandiculate':
+				not_announcer_error = 'Only an @announcer can use this command.'
+				await client.say(not_announcer_error)
+				return
+		else:
 			not_announcer_error = 'Only an @announcer can use this command.'
 			await client.say(not_announcer_error)
 			return
+
 	
 	# Send the message to its destination
 	send_msg = PSA_str + input_message
@@ -446,6 +457,127 @@ async def psa(ctx, *, input_message: str):
 	# Confirmation message for the team sending the message
 	confirmation_message = 'PSA sent successfully.'
 	await client.say(confirmation_message)
+
+
+# Messaging command for control to send a message fake messages to one team while faking the
+# source team
+@client.command(pass_context=True)
+async def fakemsg(ctx, *, input_message: str):
+	""" Sends a message to another (valid) team's private channel, faking the source as a
+	different team.
+	Use format: "/msg [SENDER] [DESTINATION] [MESSAGE]", with '-' in place of spaces in the 
+	[SENDER] or [DESTINATION] (spaces are fine to use in the MESSAGE portion of this command)
+	"""
+
+	# Roles that have permission to use this command
+	role_permissions = ['game control', 'covert control']
+
+	# Get the user info for the person who wrote this command
+	user = ctx.message.author
+
+	# Let's parse out all the parts of the command
+	#try:
+	sender_i = input_message.find(' ')
+	sender_original = input_message[:sender_i].strip()
+	message = input_message[sender_i+1:].strip()
+
+	destination_i = message.find(' ')
+	destination_original = message[:destination_i].strip()
+	message = message[destination_i+1:].strip()
+
+	# dev stuff
+	"""
+	print(input_message)
+	print('sender_original:', sender_original)
+	print('sender_i:', sender_i)
+	print('destination_original:', destination_original)
+	print('destintion_i:', destination_i)
+	print('message:', message)
+	#message_list = input_message.split()
+	"""
+	#except:
+
+	# Let's clean up sender and destination
+	sender = sender_original
+	destination = destination_original
+	# First we strip off '-comms' if it's included
+	if '-comms' in sender:
+		sender = sender[:sender.rfind('-comms')]
+	if '-comms' in destination:
+		destination = destination[:destination.rfind('-comms')]
+	# Now let's disambig the team names
+	sender, sender_key = name_disambig(sender)
+	destination, destination_key = name_disambig(destination)
+
+	"""
+	to_i = input_message.find(' ')
+	to_unfmt = input_message[0:to_i]
+	to_original = to_unfmt # original message for error msgs
+	if '-comms' in to_unfmt: # stripping off '-comms' if they included it in the command
+		to_unfmt = to_unfmt[:to_unfmt.rfind('-comms')]
+	to, to_key = name_disambig(to_unfmt) # For accessing the team channel dictionary
+	#to = to_unfmt.title()
+	message = input_message[to_i+1:].strip() # stripping off the remainder for the msg
+
+	# Getting the sending team's name 
+	fro_original = ctx.message.channel.name
+	fro_i = fro_original.rfind('-comms')
+	fro = fro_original[:fro_i]
+	fro, fro_key = name_disambig(fro)
+	"""
+	
+	# Diagnostic messages
+	"""
+	print('Input message:', input_message)
+	print("To: " + to)
+	print("From: " + fro)
+	print("to_i: " + str(to_i))
+	print('Input message: ' + input_message)
+	"""
+
+	# Error Checking
+	# Check if the user of this commands has one of the correct roles
+	permission = 0
+	for permission in role_permissions:
+		if permission in [role.name.lower() for role in user.roles]:
+			permission += 1
+	if permission == 0:
+		incorrect_role_error = 'You do not have permission to use this command.'
+		await client.say(incorrect_role_error)
+		return
+	if sender_i or destination_i < 0: # incorrect command format
+		print('sender_i:', sender_i)
+		print('destination_i:', destination_i)
+		not_valid_fakemsg_format = "Not a valid `{}fakemsg` format. ".format(command_prefix)
+		not_valid_fakemsg_format += 'The correct format for this command is:'
+		not_valid_fakemsg_format += '```{}fakemsg '.format(command_prefix)
+		not_valid_fakemsg_format += '[SENDER] [DESTINATION] [MESSAGE]```'
+		await client.say(not_valid_fakemsg_format)
+		return
+	# trying to send to or from invalid team
+	if destination_key.lower() or sender_key.lower() not in team_comms_list:
+		not_team_error_msg = '"' + to_original + '"' + ' not a valid team. Try again.'
+		await client.say(not_team_error_msg)
+		return
+
+
+	print('Otherwise successful!')
+	return
+
+	# Send the message to its destination
+	send_msg = 'Incoming message from ' + fro + ':\n"' + message + '".'
+	await client.send_message(team_comms_dict[to_key.lower()], send_msg)
+
+	# Logging message for game controllers
+	print(fro + ' sending message: ' + '"' + message + '"' + ' to ' + to + '.')
+
+	# Confirmation message for the team sending the message
+	if to.lower() == 'void': # special case for the void'
+		confirmation_message = 'Message "' + message + '" sent to the ' + to + '.'
+	else:
+		confirmation_message = 'Message "' + message + '" sent to ' + to + '.'
+	await client.say(confirmation_message)
+
 
 
 
@@ -478,7 +610,12 @@ async def next_phase(ctx):
 	# Error Checking
 	# Check if the user is has a @Game Control role tag
 	if control_role not in [role.name.lower() for role in user.roles]:
-		if user.name.lower() != 'pandiculate':
+		if testing:
+			if user.name.lower() != 'pandiculate':
+				not_gamecontrol_error = 'Only a @Game Control can use this command.'
+				await client.say(not_gamecontrol_error)
+				return
+		else:
 			not_gamecontrol_error = 'Only a @Game Control can use this command.'
 			await client.say(not_gamecontrol_error)
 			return
@@ -545,7 +682,12 @@ async def set_phase(ctx, x: int):
 	# Error Checking
 	# Check if the user is has a @Game Control role tag
 	if control_role not in [role.name.lower() for role in user.roles]:
-		if user.name.lower() != 'pandiculate':
+		if testing:
+			if user.name.lower() != 'pandiculate':
+				not_gamecontrol_error = 'Only a @Game Control can use this command.'
+				await client.say(not_gamecontrol_error)
+				return
+		else:
 			not_gamecontrol_error = 'Only a @Game Control can use this command.'
 			await client.say(not_gamecontrol_error)
 			return
@@ -597,7 +739,12 @@ async def prev_phase(ctx):
 	# Error Checking
 	# Check if the user is has a @Game Control role tag
 	if control_role not in [role.name.lower() for role in user.roles]:
-		if user.name.lower() != 'pandiculate':
+		if testing:
+			if user.name.lower() != 'pandiculate':
+				not_gamecontrol_error = 'Only a @Game Control can use this command.'
+				await client.say(not_gamecontrol_error)
+				return
+		else:
 			not_gamecontrol_error = 'Only a @Game Control can use this command.'
 			await client.say(not_gamecontrol_error)
 			return
@@ -661,7 +808,12 @@ async def last_phase(ctx):
 	# Error Checking
 	# Check if the user is has a @Game Control role tag
 	if control_role not in [role.name.lower() for role in user.roles]:
-		if user.name.lower() != 'pandiculate':
+		if testing:
+			if user.name.lower() != 'pandiculate':
+				not_gamecontrol_error = 'Only a @Game Control can use this command.'
+				await client.say(not_gamecontrol_error)
+				return
+		else:
 			not_gamecontrol_error = 'Only a @Game Control can use this command.'
 			await client.say(not_gamecontrol_error)
 			return
@@ -723,7 +875,12 @@ async def reset_phase(ctx):
 	# Error Checking
 	# Check if the user is has a @Game Control role tag
 	if control_role not in [role.name.lower() for role in user.roles]:
-		if user.name.lower() != 'pandiculate':
+		if testing:
+			if user.name.lower() != 'pandiculate':
+				not_gamecontrol_error = 'Only a @Game Control can use this command.'
+				await client.say(not_gamecontrol_error)
+				return
+		else:
 			not_gamecontrol_error = 'Only a @Game Control can use this command.'
 			await client.say(not_gamecontrol_error)
 			return
@@ -760,7 +917,12 @@ async def end_phase(ctx):
 	# Error Checking
 	# Check if the user is has a @Game Control role tag
 	if control_role not in [role.name.lower() for role in user.roles]:
-		if user.name.lower() != 'pandiculate':
+		if testing:
+			if user.name.lower() != 'pandiculate':
+				not_gamecontrol_error = 'Only a @Game Control can use this command.'
+				await client.say(not_gamecontrol_error)
+				return
+		else:
 			not_gamecontrol_error = 'Only a @Game Control can use this command.'
 			await client.say(not_gamecontrol_error)
 			return
@@ -810,7 +972,12 @@ async def what_phase(ctx):
 	# Error Checking
 	# Check if the user is has a @Game Control role tag
 	if control_role not in [role.name.lower() for role in user.roles]:
-		if user.name.lower() != 'pandiculate':
+		if testing:
+			if user.name.lower() != 'pandiculate':
+				not_gamecontrol_error = 'Only a @Game Control can use this command.'
+				await client.say(not_gamecontrol_error)
+				return
+		else:
 			not_gamecontrol_error = 'Only a @Game Control can use this command.'
 			await client.say(not_gamecontrol_error)
 			return
@@ -839,7 +1006,12 @@ async def list_phase(ctx):
 	# Error Checking
 	# Check if the user is has a @Game Control role tag
 	if control_role not in [role.name.lower() for role in user.roles]:
-		if user.name.lower() != 'pandiculate':
+		if testing:
+			if user.name.lower() != 'pandiculate':
+				not_gamecontrol_error = 'Only a @Game Control can use this command.'
+				await client.say(not_gamecontrol_error)
+				return
+		else:
 			not_gamecontrol_error = 'Only a @Game Control can use this command.'
 			await client.say(not_gamecontrol_error)
 			return
@@ -925,7 +1097,7 @@ def name_disambig(team_name):
 	return name, key
 
 
-def update_teams(verbose=True):
+def update_teams(verbose=False):
 	""" Helper function to update the team lists and dicts. Called during initialization and 
 	potentially elsewhere.
 	"""
@@ -960,6 +1132,8 @@ def update_teams(verbose=True):
 				if channel.type == 4: # catching all the categories
 					category_list.append(channel_name)
 					category_dict[channel_name] = channel
+				elif channel_name == 'pre-game-planning':
+					pass
 				else: # all other channels will be added to the all list and dict
 					all_list.append(channel_name)
 					all_dict[channel_name] = channel
