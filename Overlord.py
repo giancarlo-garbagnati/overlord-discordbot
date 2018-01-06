@@ -742,12 +742,12 @@ async def fakemsg(ctx, *, input_message: str):
 
 # Command for control to publish press_releases under other teams name
 @client.command(pass_context=True)
-async def fake_press_release(ctx, *, input_message: str):
+async def fakepress_release(ctx, *, input_message: str):
 	""" Publishes a fake press release to the press-releases channel under a specific team's name.
 	This is scoped only to certain control members (@Game Control and @Covert Control)
 	"""
 
-	break
+	return
 
 	# Get sender's channel/team name
 	fro_original = ctx.message.channel.name
