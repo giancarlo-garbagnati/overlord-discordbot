@@ -102,6 +102,57 @@ game_phases = [	'Pre-Pre-Game',
 game_phase_change = "-----GAME PHASE CHANGE-----\n"
 game_start_str = "--------GAME START--------\n"
 
+# Nations and flag emoji
+teamkeys = [	'usa',
+				'un',
+				'uk',
+				'russia',
+				'india',
+				'france',
+				'egypt',
+				'china',
+				'brazil',
+				'australia',
+				'south-africa',
+				'iran',
+				'japan',
+				'gnn',
+				'bnc']
+teamemoji = [	':flag_us:',
+				'<:FlagUN:398385909705211906>',
+				':flag_gb:',
+				':flag_ru:',
+				':flag_in:',
+				':flag_fr:',
+				':flag_eg:',
+				':flag_cn:',
+				':flag_br:',
+				':flag_au:',
+				':flag_za:',
+				':flag_ir:',
+				':flag_jp:',
+				'<:LogoGNN:398385987719397377>',
+				'<:LogoBadgerNews:398385891434954753>']
+teamemoji_cu = [	':FlagUS:',
+					':FlagUN:',
+					':FlagUK:',
+					':FlagRussia:',
+					':FlagIndia:',
+					':FlagFrance:',
+					':FlagEgypt:',
+					':FlagChina:',
+					':FlagBrazil:',
+					':FlagAustralia:',
+					':flag_za:',
+					':flag_ir:',
+					':flag_jp:',
+					':LogoGNN:',
+					':LogoBadgerNews:']
+# Create the flag_emoji_dict
+flag_emoji_dict = dict()
+for i in range(len(teamkeys)):
+	flag_emoji_dict[teamkeys[i]] = teamemoji[i]
+
 # Creating the bot client
 command_prefix = '/' # this is the prefix used in front of each command
 bot_description = "Sky Watcher Bot for Watch The Skies"
@@ -110,6 +161,7 @@ client = Bot(description=bot_description, command_prefix=command_prefix, pm_help
 # Dev stuff
 testing = True
 disable_msg = True
+disable_pr = False
 
 timekeeper_role = 'game control'
 
@@ -145,9 +197,16 @@ async def on_ready():
 	#print(team_comms_dict)
 	print("##############################")
 
-	#print(team_comms_list)
-	#print('south-africa'.title())
-	#await client.send_message(team_comms_dict[to_key.lower()], send_msg)
+	#await client.send_message(dev_dict['dev-announcements'], dev_dict['dev-announcements'].mention)
+	emojis, notset = check_flag_emoji()
+	print(notset)
+	# To see all the emoji in Discord
+	#await client.send_message(dev_dict['dev-announcements'], emojis)
+
+	# This will show all custom emoji with it's respective code in the terminal
+	#for emoji in client.get_all_emojis():
+	#	print(emoji)
+	#await client.send_message('')
 
 
 # Greeting message upon user joining
@@ -156,11 +215,11 @@ async def on_member_join(member):
 	""" On member join function
 	"""
 	server = member.server
-	#member_role = __getRole(server.roles, role)
 	await client.send_message(public_dict['role-assignment'], greeting_msg.format(member))
 	print("Member {} joined the server.".format(member))
-	#await client.send_message(member, welcome_msg.format(member, server))
-	#await client.send_message(client.get_channel(log_channel_id), "{0.name} has joined".format(member))
+
+
+
 
 ###################################################################################################
 # Basic commands (not WtS specific)
@@ -277,7 +336,9 @@ async def msg(ctx, *, input_message: str):
 		return
 
 	# Send the message to its destination
-	send_msg = 'Incoming message from ' + fro + ':\n"' + message + '".'
+	fro_emoji = get_emoji(fro_key)
+	send_msg = 'Incoming message from {}{}:\n"{}".'.format(fro_emoji,fro,message)
+	#send_msg = 'Incoming message from ' + fro + ':\n"' + message + '".'
 	await client.send_message(team_comms_dict[to_key.lower()], send_msg)
 
 	# Logging message for game controllers
@@ -318,6 +379,11 @@ async def press_release(ctx, *, input_message: str):
 	#print(user.roles)
 	"""
 
+	if testing:
+		if disable_pr:
+			if (fro_key.lower() not in ['dev','dev2']) or (to_key.lower() not in ['dev','dev2']):
+				return
+
 	# Error Checking
 	if (fro_i < 1) or (fro_key.lower() not in team_comms_list): # not in correct channel
 		invalid_channel_error_msg = 'You cannot use this command in this channel.'
@@ -329,7 +395,7 @@ async def press_release(ctx, *, input_message: str):
 		await client.say(not_valid_msg_format)
 		return
 	# Check if the user is a head-of-state. This command can only be used by heads-of-state
-
+	not_headofstate = False
 	if 'head of state'.lower() not in [role.name.lower() for role in user.roles]:
 		sec_gen_role = 'secretary-general of the united nations'
 		if sec_gen_role.lower() not in [role.name.lower() for role in user.roles]:
@@ -344,8 +410,14 @@ async def press_release(ctx, *, input_message: str):
 		return
 
 	# Send the message to its destination
-	send_msg = 'Official press release from ' + fro.upper() + ':\n"' + input_message + '".'
-	await client.send_message(public_dict['press-releases'], send_msg)
+	fro_emoji = get_emoji(fro_key)
+	send_msg = 'Official press release from {}{}'.format(fro_emoji,fro.upper())
+	send_msg += ':\n"{}".'.format(input_message)
+	if testing:
+		await client.send_message(dev_dict['dev-press-releases'], send_msg)
+		await client
+	else:
+		await client.send_message(public_dict['press-releases'], send_msg)
 
 	# Logging message for game controllers
 	log_message = 'Head-of-State (' + user.name + ') from ' + fro + ' is publishing the '
@@ -408,7 +480,7 @@ async def blast(ctx, *, input_message: str):
 	print(log_message)
 
 	# Confirmation message for the team sending the message
-	confirmation_message = 'Blast announcement sent successfully.'
+	confirmation_message = 'Blast message sent successfully.'
 	await client.say(confirmation_message)
 
 
@@ -466,6 +538,73 @@ async def psa(ctx, *, input_message: str):
 
 	# Confirmation message for the team sending the message
 	confirmation_message = 'PSA sent successfully.'
+	await client.say(confirmation_message)
+
+
+"""
+Command: "/an" | User:: @Game Control
+Function: Post in the announcment channel
+Secondary Function: Post in all Comm's channals message: `New global announcement! (#announcements)
+(edited)
+...and then the same secondary function on the press release option that posts to comms channals New Press Release from [Country Flag]
+"""
+# Command for control to be able to post a message to the Announcements channel, and send a message
+# to all other -comms channels to check announcements
+@client.command(pass_context=True)
+async def an(ctx, *, input_message: str):
+	""" Publishes a message to the announcements channel, and send a message to all other -comms
+	channels to check the announcements channel
+	Can only be published by someone with an @announcer role tag
+	"""
+	
+	# The role tag that's allowed to use this command
+	an_role = 'announcer'
+	an_key = 'announcements'
+	an_channel = public_dict[an_key]
+	#announcement_announcement = "New global announcement! (#announcements)"
+	announcement_announcement = "New global announcement! ({})".format(an_channel.mention)
+
+	# Get the user info for the person who wrote this command
+	user = ctx.message.author
+
+	# Error Checking
+	if len(input_message.strip()) < 1: # missing a message
+		not_valid_msg_format = 'Not a valid message. The correct format for this command is: "'
+		not_valid_msg_format += command_prefix + 'an [MESSAGE]".'
+		await client.say(not_valid_msg_format)
+		return
+	# Check if the user is has a @announcer role tag
+	if an_role not in [role.name.lower() for role in user.roles]:
+		if testing:
+			if user.name.lower() != 'pandiculate':
+				not_announcer_error = 'Only an @Announcer can use this command.'
+				await client.say(not_announcer_error)
+				return
+		else:
+			not_announcer_error = 'Only an @Announcer can use this command.'
+			await client.say(not_announcer_error)
+			return
+	
+	# Send the message to its destination
+	send_msg = input_message
+	''' send to all channels here '''
+	if testing: # if this is True, we'll restrict this command to just message dev channels
+		await client.send_message(dev_dict['dev-announcements'], send_msg)
+		for key, value in dev_dict.items():
+			if '-comms' in key:
+				await client.send_message(value, announcement_announcement)
+	else: # otherwise everyone gets the message
+		await client.send_message(an_channel, send_msg)
+		for key, value in team_comms_dict.items():
+			await client.send_message(value, announcement_announcement)
+
+	# Logging message for game controllers
+	log_message = 'The following announcement has been sent to the announcements channel by user '
+	log_message += '{}: "{}".'.format(user.name, input_message)
+	print(log_message)
+
+	# Confirmation message for the team sending the message
+	confirmation_message = 'Announcement sent successfully.'
 	await client.say(confirmation_message)
 
 
@@ -573,7 +712,9 @@ async def fakemsg(ctx, *, input_message: str):
 		return
 
 	# Send the message to its destination
-	send_msg = 'Incoming message from ' + sender + ':\n"' + message + '".'
+	sender_emoji = get_emoji(sender_key)
+	print(sender_emoji)
+	send_msg = 'Incoming message from {}{}:\n"{}".'.format(sender_emoji,sender,message)
 	await client.send_message(team_comms_dict[destination_key.lower()], send_msg)
 
 	# Logging message for game controllers
@@ -659,7 +800,7 @@ async def fake_press_release(ctx, *, input_message: str):
 
 # Command to manually refresh the team comms list/dict
 @client.command()
-async def update_team_comms():
+async def update_team_comms(*args):
 	""" Command that refreshed the team comms list/dev
 	Usable by anyone
 	"""
@@ -1151,18 +1292,18 @@ def name_disambig(team_name):
 	# If nothing else, it'll return itself twice (assuming the name and key are the same and 
 	# correct)
 	name = team_name.replace('_','-').title()
-	key = team_name.replace('_','-')
+	key = team_name.replace('_','-').lower()
 
 	# Specific country name checks:
 	# USA
 	if name.lower() in ['usa', 'united-states', 'united-states-of-america', 'america', "'murica", 
 						'murica']:
 		name = 'USA'
-		key = 'usa'
+		key = name.lower()
 	# UK
-	elif name.lower() in ['uk', 'united-kingdom', 'england']:
+	elif name.lower() in ['uk', 'united-kingdom', 'england', 'gb', 'great-britain']:
 		name = 'UK'
-		key = 'uk'
+		key = name.lower()
 	# South Africa
 	elif name.lower() == 'sa':
 		name = 'South-Africa'
@@ -1183,10 +1324,10 @@ def name_disambig(team_name):
 	elif name.lower() in ['unhcr', 'un-high-commission-on-refugees',
 						  'un-high-commission-of-refugees']:
 		name = 'UNHCR'
-		key = 'unhcr'
+		key = name.lower()
 	elif name.lower() in ['wfp', 'world-food-program']:
 		name = 'WFP'
-		key = 'wfp'
+		key = name.lower()
 	# Add more of these as necessary
 	
 	return name, key
@@ -1221,7 +1362,8 @@ def update_teams(verbose=False):
 				
 				# special case for the dev channels
 				if channel_name in ['development', 'dev-comms', 'dev2-comms', 
-									'dev-commandtesting']:
+									'dev-commandtesting', 'dev-announcements',
+									'dev-press-releases']:
 					dev_list.append(channel_name)
 					dev_dict[channel_name] = channel
 				if channel.type == 4: # catching all the categories
@@ -1256,7 +1398,6 @@ def update_teams(verbose=False):
 						other_list.append(channel_name)
 						other_dict[channel_name] = channel
 
-
 				
 	#Diagnostic Messages
 	"""
@@ -1276,6 +1417,43 @@ def update_teams(verbose=False):
 	print("other_dict:", other_dict)
 	print("other_list then _dict lens", len(other_list), len(other_dict))
 	"""
+
+# A helper function that goes through all flags and emoji, puts them in one string returns it, 
+# and compares it to all in the -comms list/dict and sends a string of all items in the
+# -comms list/dict that aren't in the flag dict
+def check_flag_emoji():
+	""" Helper function to check all flag emoji in the flag emoji dict.
+	Returns a string of all the flag emoji with it's key, and also returns a string
+	of all the elements in the -comms list/dict that aren't in the flag dict
+	"""
+
+	# Create a string of all the flag emoji with its key
+	emoji_str = ''
+	for key, value in flag_emoji_dict.items():
+		emoji_str += '{} {}\n'.format(value, key)
+
+	# Create a string of all items in the -comms list/dict that aren't in the flag dict
+	not_in_set = "These -comms channels don't have a respective emoji:\n"
+	for comm_key in team_comms_dict.keys():
+		if comm_key not in flag_emoji_dict.keys():
+			not_in_set += '{}, '.format(comm_key)
+	not_in_set = not_in_set[:-2]
+
+	return emoji_str, not_in_set
+			
+	
+# A helper function to retrieve the emoji string given a key string
+def get_emoji(key):
+	""" A helper function to retrieve the emoji string given a key string, if it doesn't exist
+	in the dict, returns a blank string
+	"""
+	#print(key)
+	#print(flag_emoji_dict.keys())
+	if key in flag_emoji_dict.keys():
+		return flag_emoji_dict[key]
+	else:
+		return ''
+
 	
 ###################################################################################################
 # Other
