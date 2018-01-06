@@ -740,15 +740,14 @@ async def fakemsg(ctx, *, input_message: str):
 	await client.say(confirmation_message)
 
 
-# Command for a team to publish a press release
+# Command for control to publish press_releases under other teams name
 @client.command(pass_context=True)
 async def fake_press_release(ctx, *, input_message: str):
-	""" Publishes a press release to the press-releases channel under the team's name.
-	Can only be published by someone with a @Head of State role tag or
-	@Secretary-General of the United Nations tag
+	""" Publishes a fake press release to the press-releases channel under a specific team's name.
+	This is scoped only to certain control members (@Game Control and @Covert Control)
 	"""
 
-	return
+	break
 
 	# Get sender's channel/team name
 	fro_original = ctx.message.channel.name
@@ -769,6 +768,11 @@ async def fake_press_release(ctx, *, input_message: str):
 	#print(user.roles)
 	"""
 
+	if testing:
+		if disable_pr:
+			if (fro_key.lower() not in ['dev','dev2']) or (to_key.lower() not in ['dev','dev2']):
+				return
+
 	# Error Checking
 	if (fro_i < 1) or (fro_key.lower() not in team_comms_list): # not in correct channel
 		invalid_channel_error_msg = 'You cannot use this command in this channel.'
@@ -780,7 +784,7 @@ async def fake_press_release(ctx, *, input_message: str):
 		await client.say(not_valid_msg_format)
 		return
 	# Check if the user is a head-of-state. This command can only be used by heads-of-state
-
+	not_headofstate = False
 	if 'head of state'.lower() not in [role.name.lower() for role in user.roles]:
 		sec_gen_role = 'secretary-general of the united nations'
 		if sec_gen_role.lower() not in [role.name.lower() for role in user.roles]:
@@ -795,8 +799,20 @@ async def fake_press_release(ctx, *, input_message: str):
 		return
 
 	# Send the message to its destination
-	send_msg = 'Official press release from ' + fro.upper() + ':\n"' + input_message + '".'
-	await client.send_message(public_dict['press-releases'], send_msg)
+	fro_emoji = get_emoji(fro_key)
+	send_msg = 'Official press release from {}{}'.format(fro_emoji,fro.upper())
+	send_msg += ':\n"{}".'.format(input_message)
+	pr_channel = public_dict['press-releases'].mention
+	pr_announcement = 'New press release from {}{}! ({})'.format(fro_emoji,fro.upper(),pr_channel)
+	if testing:
+		await client.send_message(dev_dict['dev-press-releases'], send_msg)
+		for key, channel in dev_dict.items():
+			if channel.name != 'dev-press-releases':
+				await client.send_message(channel, pr_announcement)
+	else:
+		await client.send_message(public_dict['press-releases'], send_msg)
+		for key, channel in team_comms_dict.items():
+			await client.send_message(channel, pr_announcement)
 
 	# Logging message for game controllers
 	log_message = 'Head-of-State (' + user.name + ') from ' + fro + ' is publishing the '
