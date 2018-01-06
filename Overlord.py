@@ -195,9 +195,9 @@ async def on_ready():
 	update_teams(verbose=False)
 	print("Team channel list and dictionary initialized.")
 	#print(team_comms_dict)
-	print("##############################")
-
-	#await client.send_message(dev_dict['dev-announcements'], dev_dict['dev-announcements'].mention)
+	print('--------')
+	
+	print("Checking emoji...")
 	emojis, notset = check_flag_emoji()
 	print(notset)
 	# To see all the emoji in Discord
@@ -206,6 +206,10 @@ async def on_ready():
 	# This will show all custom emoji with it's respective code in the terminal
 	#for emoji in client.get_all_emojis():
 	#	print(emoji)
+
+	print("##############################")
+
+	#await client.send_message(dev_dict['dev-announcements'], dev_dict['dev-announcements'].mention)
 	#await client.send_message('')
 
 
@@ -413,11 +417,17 @@ async def press_release(ctx, *, input_message: str):
 	fro_emoji = get_emoji(fro_key)
 	send_msg = 'Official press release from {}{}'.format(fro_emoji,fro.upper())
 	send_msg += ':\n"{}".'.format(input_message)
+	pr_channel = public_dict['press-releases'].mention
+	pr_announcement = 'New press release from {}{}! ({})'.format(fro_emoji,fro.upper(),pr_channel)
 	if testing:
 		await client.send_message(dev_dict['dev-press-releases'], send_msg)
-		await client
+		for key, channel in dev_dict.items():
+			if channel.name != 'dev-press-releases':
+				await client.send_message(channel, pr_announcement)
 	else:
 		await client.send_message(public_dict['press-releases'], send_msg)
+		for key, channel in team_comms_dict.items():
+			await client.send_message(channel, pr_announcement)
 
 	# Logging message for game controllers
 	log_message = 'Head-of-State (' + user.name + ') from ' + fro + ' is publishing the '
@@ -427,6 +437,7 @@ async def press_release(ctx, *, input_message: str):
 	# Confirmation message for the team sending the message
 	confirmation_message = 'Press release published successfully.'
 	await client.say(confirmation_message)
+
 
 ###################################################################################################
 # Game Controller Commands
@@ -713,7 +724,6 @@ async def fakemsg(ctx, *, input_message: str):
 
 	# Send the message to its destination
 	sender_emoji = get_emoji(sender_key)
-	print(sender_emoji)
 	send_msg = 'Incoming message from {}{}:\n"{}".'.format(sender_emoji,sender,message)
 	await client.send_message(team_comms_dict[destination_key.lower()], send_msg)
 
