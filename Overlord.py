@@ -49,54 +49,54 @@ current_phase_i = 0
 game_phases = [	'Pre-Pre-Game',
 				'Pre-Game Briefing',
 				'Spring 2020 - Initial Preparation',
-				'Spring 2020 - Operations Phase',
-				'Spring 2020 - Check-in Phase',
-				'Spring 2020 - Free Phase',
-				'Summer 2020 - Operations Phase',
-				'Summer 2020 - Check-in Phase',
-				'Summer 2020 - Free Phase',
-				'Fall 2020 - Operations Phase',
-				'Fall 2020 - Check-in Phase',
-				'Fall 2020 - Free Phase',
-				'Winter 2020 - Operations Phase',
-				'Winter 2020 - Check-in Phase',
-				'Winter 2020 - Free Phase',
-				'Spring 2021 - Operations Phase',
-				'Spring 2021 - Check-in Phase',
-				'Spring 2021 - Free Phase',
-				'Summer 2021 - Operations Phase',
-				'Summer 2021 - Check-in Phase',
-				'Summer 2021 - Free Phase',
-				'Fall 2021 - Operations Phase',
-				'Fall 2021 - Check-in Phase',
-				'Fall 2021 - Free Phase',
-				'Winter 2021 - Operations Phase',
-				'Winter 2021 - Check-in Phase',
-				'Winter 2021 - Free Phase',
-				'Spring 2022 - Operations Phase',
-				'Spring 2022 - Check-in Phase',
-				'Spring 2022 - Free Phase',
-				'Summer 2022 - Operations Phase',
-				'Summer 2022 - Check-in Phase',
-				'Summer 2022 - Free Phase',
-				'Fall 2022 - Operations Phase',
-				'Fall 2022 - Check-in Phase',
-				'Fall 2022 - Free Phase',
-				'Winter 2022 - Operations Phase',
-				'Winter 2022 - Check-in Phase',
-				'Winter 2022 - Free Phase',
-				'Spring 2023 - Operations Phase',
-				'Spring 2023 - Check-in Phase',
-				'Spring 2023 - Free Phase',
-				'Summer 2023 - Operations Phase',
-				'Summer 2023 - Check-in Phase',
-				'Summer 2023 - Free Phase',
-				'Fall 2023 - Operations Phase',
-				'Fall 2023 - Check-in Phase',
-				'Fall 2023 - Free Phase',
-				'Winter 2023 - Operations Phase',
-				'Winter 2023 - Check-in Phase',
-				'Winter 2023 - Free Phase',
+				'Spring 2020 - Operations Phase (15 minutes)',
+				'Spring 2020 - Check-in Phase (10 minutes)',
+				'Spring 2020 - Free Phase (15 minutes)',
+				'Summer 2020 - Operations Phase (15 minutes)',
+				'Summer 2020 - Check-in Phase (10 minutes)',
+				'Summer 2020 - Free Phase (15 minutes)',
+				'Fall 2020 - Operations Phase (15 minutes)',
+				'Fall 2020 - Check-in Phase (10 minutes)',
+				'Fall 2020 - Free Phase (15 minutes)',
+				'Winter 2020 - Operations Phase (15 minutes)',
+				'Winter 2020 - Check-in Phase (10 minutes)',
+				'Winter 2020 - Free Phase (15 minutes)',
+				'Spring 2021 - Operations Phase (15 minutes)',
+				'Spring 2021 - Check-in Phase (10 minutes)',
+				'Spring 2021 - Free Phase (15 minutes)',
+				'Summer 2021 - Operations Phase (15 minutes)',
+				'Summer 2021 - Check-in Phase (10 minutes)',
+				'Summer 2021 - Free Phase (15 minutes)',
+				'Fall 2021 - Operations Phase (15 minutes)',
+				'Fall 2021 - Check-in Phase (10 minutes)',
+				'Fall 2021 - Free Phase (15 minutes)',
+				'Winter 2021 - Operations Phase (15 minutes)',
+				'Winter 2021 - Check-in Phase (10 minutes)',
+				'Winter 2021 - Free Phase (15 minutes)',
+				'Spring 2022 - Operations Phase (15 minutes)',
+				'Spring 2022 - Check-in Phase (10 minutes)',
+				'Spring 2022 - Free Phase (15 minutes)',
+				'Summer 2022 - Operations Phase (15 minutes)',
+				'Summer 2022 - Check-in Phase (10 minutes)',
+				'Summer 2022 - Free Phase (15 minutes)',
+				'Fall 2022 - Operations Phase (15 minutes)',
+				'Fall 2022 - Check-in Phase (10 minutes)',
+				'Fall 2022 - Free Phase (15 minutes)',
+				'Winter 2022 - Operations Phase (15 minutes)',
+				'Winter 2022 - Check-in Phase (10 minutes)',
+				'Winter 2022 - Free Phase (15 minutes)',
+				'Spring 2023 - Operations Phase (15 minutes)',
+				'Spring 2023 - Check-in Phase (10 minutes)',
+				'Spring 2023 - Free Phase (15 minutes)',
+				'Summer 2023 - Operations Phase (15 minutes)',
+				'Summer 2023 - Check-in Phase (10 minutes)',
+				'Summer 2023 - Free Phase (15 minutes)',
+				'Fall 2023 - Operations Phase (15 minutes)',
+				'Fall 2023 - Check-in Phase (10 minutes)',
+				'Fall 2023 - Free Phase (15 minutes)',
+				'Winter 2023 - Operations Phase (15 minutes)',
+				'Winter 2023 - Check-in Phase (10 minutes)',
+				'Winter 2023 - Free Phase (15 minutes)',
 				'Game End and Debrief']
 # Game phase change prepend str
 game_phase_change = "-----GAME PHASE CHANGE-----\n"
@@ -145,6 +145,8 @@ async def on_ready():
 	#print(team_comms_dict)
 	print("##############################")
 
+	#print(team_comms_list)
+	#print('south-africa'.title())
 	#await client.send_message(team_comms_dict[to_key.lower()], send_msg)
 
 
@@ -293,7 +295,8 @@ async def msg(ctx, *, input_message: str):
 @client.command(pass_context=True)
 async def press_release(ctx, *, input_message: str):
 	""" Publishes a press release to the press-releases channel under the team's name.
-	Can only be published by someone with a @Head of State role tag
+	Can only be published by someone with a @Head of State role tag or
+	@Secretary-General of the United Nations tag
 	"""
 
 	# Get sender's channel/team name
@@ -326,10 +329,17 @@ async def press_release(ctx, *, input_message: str):
 		await client.say(not_valid_msg_format)
 		return
 	# Check if the user is a head-of-state. This command can only be used by heads-of-state
-	if 'head of state' not in [role.name.lower() for role in user.roles]:
-		not_headofstate_error = 'Only Heads-of-State can use this command in their respective '
-		not_headofstate_error += '-comms channel. Non-Heads-of-State must go through news or '
-		not_headofstate_error += 'with a Press conference.'
+
+	if 'head of state'.lower() not in [role.name.lower() for role in user.roles]:
+		sec_gen_role = 'secretary-general of the united nations'
+		if sec_gen_role.lower() not in [role.name.lower() for role in user.roles]:
+			not_headofstate = True
+		else:
+			not_headofstate = False
+	if not_headofstate:
+		not_headofstate_error = 'Only Heads-of-State or UN Secretary Generals can use this '
+		not_headofstate_error += 'command in their respective -comms channel. All others '
+		not_headofstate_error += 'must go through news or with a Press conference.'
 		await client.say(not_headofstate_error)
 		return
 
@@ -338,8 +348,8 @@ async def press_release(ctx, *, input_message: str):
 	await client.send_message(public_dict['press-releases'], send_msg)
 
 	# Logging message for game controllers
-	log_message = 'Head-of-State (' + user.name + ') from ' + fro + ' is publishing the following press release: "'
-	log_message += input_message + '".'
+	log_message = 'Head-of-State (' + user.name + ') from ' + fro + ' is publishing the '
+	log_message += 'following press release: "{}".'.format(input_message)
 	print(log_message)
 
 	# Confirmation message for the team sending the message
@@ -545,9 +555,7 @@ async def fakemsg(ctx, *, input_message: str):
 		incorrect_role_error = 'You do not have permission to use this command.'
 		await client.say(incorrect_role_error)
 		return
-	if sender_i or destination_i < 0: # incorrect command format
-		print('sender_i:', sender_i)
-		print('destination_i:', destination_i)
+	if (sender_i < 0) or (destination_i < 0): # incorrect command format
 		not_valid_fakemsg_format = "Not a valid `{}fakemsg` format. ".format(command_prefix)
 		not_valid_fakemsg_format += 'The correct format for this command is:'
 		not_valid_fakemsg_format += '```{}fakemsg '.format(command_prefix)
@@ -555,29 +563,109 @@ async def fakemsg(ctx, *, input_message: str):
 		await client.say(not_valid_fakemsg_format)
 		return
 	# trying to send to or from invalid team
-	if destination_key.lower() or sender_key.lower() not in team_comms_list:
-		not_team_error_msg = '"' + to_original + '"' + ' not a valid team. Try again.'
+	if sender_key.lower() not in team_comms_list:
+		not_team_error_msg = '"' + sender_original + '"' + ' not a valid team. Try again.'
+		await client.say(not_team_error_msg)
+		return
+	if destination_key.lower() not in team_comms_list:
+		not_team_error_msg = '"' + destination_original + '"' + ' not a valid team. Try again.'
 		await client.say(not_team_error_msg)
 		return
 
-
-	print('Otherwise successful!')
-	return
-
 	# Send the message to its destination
-	send_msg = 'Incoming message from ' + fro + ':\n"' + message + '".'
-	await client.send_message(team_comms_dict[to_key.lower()], send_msg)
+	send_msg = 'Incoming message from ' + sender + ':\n"' + message + '".'
+	await client.send_message(team_comms_dict[destination_key.lower()], send_msg)
 
 	# Logging message for game controllers
-	print(fro + ' sending message: ' + '"' + message + '"' + ' to ' + to + '.')
+	log_msg = 'Fake message sent from {} to {}: "{}".'.format(sender, destination, message)
+	print(log_msg)
 
 	# Confirmation message for the team sending the message
-	if to.lower() == 'void': # special case for the void'
-		confirmation_message = 'Message "' + message + '" sent to the ' + to + '.'
+	confirmation_message = 'Fake message sent from {} '.format(sender)
+	if destination.lower() == 'void': # special case for the void'
+		confirmation_message += 'to the {}: "{}"'.format(destination, message)
 	else:
-		confirmation_message = 'Message "' + message + '" sent to ' + to + '.'
+		confirmation_message += 'to {}: "{}"'.format(destination, message)
 	await client.say(confirmation_message)
 
+
+# Command for a team to publish a press release
+@client.command(pass_context=True)
+async def fake_press_release(ctx, *, input_message: str):
+	""" Publishes a press release to the press-releases channel under the team's name.
+	Can only be published by someone with a @Head of State role tag or
+	@Secretary-General of the United Nations tag
+	"""
+
+	return
+
+	# Get sender's channel/team name
+	fro_original = ctx.message.channel.name
+	fro_i = fro_original.rfind('-comms')
+	fro = fro_original[:fro_i]
+	fro, fro_key = name_disambig(fro)
+
+	# Get the user info for the person who wrote this command
+	user = ctx.message.author
+	# https://stackoverflow.com/questions/44893044/how-to-get-users-roles-discord-python
+	#user.roles
+	#print(user)
+	"""
+	if 'head of state' in [role.name.lower() for role in user.roles]:
+		await client.say("Hail to the Chief")
+	else:
+		await client.say("I don't have to listen to you")
+	#print(user.roles)
+	"""
+
+	# Error Checking
+	if (fro_i < 1) or (fro_key.lower() not in team_comms_list): # not in correct channel
+		invalid_channel_error_msg = 'You cannot use this command in this channel.'
+		await client.say(invalid_channel_error_msg)
+		return
+	if len(input_message.strip()) < 1: # missing a message
+		not_valid_msg_format = 'Not a valid message. The correct format for this command is: "'
+		not_valid_msg_format += command_prefix + 'press_release [MESSAGE]".'
+		await client.say(not_valid_msg_format)
+		return
+	# Check if the user is a head-of-state. This command can only be used by heads-of-state
+
+	if 'head of state'.lower() not in [role.name.lower() for role in user.roles]:
+		sec_gen_role = 'secretary-general of the united nations'
+		if sec_gen_role.lower() not in [role.name.lower() for role in user.roles]:
+			not_headofstate = True
+		else:
+			not_headofstate = False
+	if not_headofstate:
+		not_headofstate_error = 'Only Heads-of-State or UN Secretary Generals can use this '
+		not_headofstate_error += 'command in their respective -comms channel. All others '
+		not_headofstate_error += 'must go through news or with a Press conference.'
+		await client.say(not_headofstate_error)
+		return
+
+	# Send the message to its destination
+	send_msg = 'Official press release from ' + fro.upper() + ':\n"' + input_message + '".'
+	await client.send_message(public_dict['press-releases'], send_msg)
+
+	# Logging message for game controllers
+	log_message = 'Head-of-State (' + user.name + ') from ' + fro + ' is publishing the '
+	log_message += 'following press release: "{}".'.format(input_message)
+	print(log_message)
+
+	# Confirmation message for the team sending the message
+	confirmation_message = 'Press release published successfully.'
+	await client.say(confirmation_message)
+
+
+# Command to manually refresh the team comms list/dict
+@client.command()
+async def update_team_comms():
+	""" Command that refreshed the team comms list/dev
+	Usable by anyone
+	"""
+
+	update_teams()
+	print('Team comms updated.')
 
 
 
@@ -1033,13 +1121,6 @@ async def list_phase(ctx):
 	await client.say(send_msg)
 
 
-
-
-
-###################################################################################################
-# Helper Functions
-###################################################################################################
-
 # Helper functions for changing the current_phase_i iterator
 def change_current_phase(x):
 	""" Function for incrementing or decrementing the current_phase_i by x
@@ -1052,6 +1133,14 @@ def set_current_phase(x):
 	global current_phase_i
 	current_phase_i = x
 
+
+
+
+###################################################################################################
+# Helper Functions
+###################################################################################################
+
+
 # Function for helping sort out different possible team names
 def name_disambig(team_name):
 	""" Helper function for helping sort through ambiguous team names.
@@ -1061,8 +1150,8 @@ def name_disambig(team_name):
 	
 	# If nothing else, it'll return itself twice (assuming the name and key are the same and 
 	# correct)
-	name = team_name.replace('_','-')
-	key = team_name
+	name = team_name.replace('_','-').title()
+	key = team_name.replace('_','-')
 
 	# Specific country name checks:
 	# USA
@@ -1091,7 +1180,13 @@ def name_disambig(team_name):
 	elif name.lower() in ['un', 'united-nations']:
 		name = 'United-Nations'
 		key = 'un'
-	# More UN comms? <======================================================================
+	elif name.lower() in ['unhcr', 'un-high-commission-on-refugees',
+						  'un-high-commission-of-refugees']:
+		name = 'UNHCR'
+		key = 'unhcr'
+	elif name.lower() in ['wfp', 'world-food-program']:
+		name = 'WFP'
+		key = 'wfp'
 	# Add more of these as necessary
 	
 	return name, key
