@@ -361,7 +361,8 @@ async def msg(ctx, *, input_message: str):
 async def press_release(ctx, *, input_message: str):
 	""" Publishes a press release to the press-releases channel under the team's name.
 	Can only be published by someone with a @Head of State role tag or
-	@Secretary-General of the United Nations tag
+	@Secretary-General of the United Nations tag. Command format:
+	/press_release
 	"""
 
 	# Get sender's channel/team name
@@ -447,7 +448,8 @@ async def press_release(ctx, *, input_message: str):
 @client.command(pass_context=True)
 async def blast(ctx, *, input_message: str):
 	""" Publishes a message to all channels (sends the message as is)
-	Can only be published by someone with an @announcer role tag
+	Can only be published by someone with an @announcer role tag.
+	Format: /blast [MESSAGE]
 	"""
 	
 	# The role tag that's allowed to use this command
@@ -500,7 +502,7 @@ async def blast(ctx, *, input_message: str):
 @client.command(pass_context=True)
 async def psa(ctx, *, input_message: str):
 	""" Publishes a PSA to all channels (sends the message prepended with a 'PSA'-like announcement)
-	Can only be published by someone with an @announcer role tag
+	Can only be published by someone with an @announcer role tag. Command format: /psa [MESSAGE]
 	"""
 	
 	# PSA announcement
@@ -624,7 +626,7 @@ async def an(ctx, *, input_message: str):
 @client.command(pass_context=True)
 async def fakemsg(ctx, *, input_message: str):
 	""" Sends a message to another (valid) team's private channel, faking the source as a
-	different team.
+	different team. Can only be sent by anyone with a @Game Control or @Covert Control tag
 	Use format: "/msg [SENDER] [DESTINATION] [MESSAGE]", with '-' in place of spaces in the 
 	[SENDER] or [DESTINATION] (spaces are fine to use in the MESSAGE portion of this command)
 	"""
@@ -946,6 +948,12 @@ async def set_phase(ctx, x: int):
 			not_gamecontrol_error = 'Only a @Game Control can use this command.'
 			await client.say(not_gamecontrol_error)
 			return
+	if (x >= len(game_phases)) or (x < 0): # if the phase # chosen is out of range
+		outofrange_error = 'The phase number chosen is out of range. Must be greater or equal '
+		outofrange_error += 'to 0 and less than {}.'.format(len(game_phases))
+		await client.say(outofrange_error)
+		return
+
 
 	# Set the phase
 	set_current_phase(x)
