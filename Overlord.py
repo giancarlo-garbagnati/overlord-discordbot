@@ -950,7 +950,8 @@ async def set_phase(ctx, x: int):
 			return
 	if (x >= len(game_phases)) or (x < 0): # if the phase # chosen is out of range
 		outofrange_error = 'The phase number chosen is out of range. Must be greater or equal '
-		outofrange_error += 'to 0 and less than {}.'.format(len(game_phases))
+		outofrange_error += 'to 0 and less than {}. You can use the '.format(len(game_phases))
+		outofrange_error +=
 		await client.say(outofrange_error)
 		return
 
