@@ -729,14 +729,20 @@ async def fakemsg(ctx, *, input_message: str):
 
 	# Error Checking
 	# Check if the user of this commands has one of the correct roles
-	permission = 0
+	correct_role = False
 	for permission in role_permissions:
 		if permission in [role.name.lower() for role in user.roles]:
-			permission += 1
-	if permission == 0:
-		incorrect_role_error = 'You do not have permission to use this command.'
-		await client.say(incorrect_role_error)
-		return
+			correct_role = True
+	if not correct_role:
+		if testing:
+			if user.name.lower() != 'pandiculate':
+				incorrect_role_error = 'You do not have permission to use this command.'
+				await client.say(incorrect_role_error)
+				return
+		else:
+			incorrect_role_error = 'You do not have permission to use this command.'
+			await client.say(incorrect_role_error)
+			return
 	if (sender_i < 0) or (destination_i < 0): # incorrect command format
 		not_valid_fakemsg_format = "Not a valid `{}fakemsg` format. ".format(command_prefix)
 		not_valid_fakemsg_format += 'The correct format for this command is:'
@@ -776,70 +782,70 @@ async def fakemsg(ctx, *, input_message: str):
 @client.command(pass_context=True)
 async def fakepress_release(ctx, *, input_message: str):
 	""" Publishes a fake press release to the press-releases channel under a specific team's name.
-	This is scoped only to certain control members (@Game Control and @Covert Control)
+	This is scoped only to certain control members (@Game Control and @Covert Control). Command
+	format is: /fakepress_release [SENDER] [MESSAGE]
 	"""
 
-	return
-
-	# Get sender's channel/team name
-	fro_original = ctx.message.channel.name
-	fro_i = fro_original.rfind('-comms')
-	fro = fro_original[:fro_i]
-	fro, fro_key = name_disambig(fro)
+	# Roles that have permission to use this command
+	role_permissions = ['game control', 'covert control']
 
 	# Get the user info for the person who wrote this command
 	user = ctx.message.author
-	# https://stackoverflow.com/questions/44893044/how-to-get-users-roles-discord-python
-	#user.roles
-	#print(user)
-	"""
-	if 'head of state' in [role.name.lower() for role in user.roles]:
-		await client.say("Hail to the Chief")
-	else:
-		await client.say("I don't have to listen to you")
-	#print(user.roles)
-	"""
 
-	if testing:
-		if disable_pr:
-			if (fro_key.lower() not in ['dev','dev2']) or (to_key.lower() not in ['dev','dev2']):
-				return
+	# Let's parse out all the parts of the command
+	#try:
+	sender_i = input_message.find(' ')
+	sender_original = input_message[:sender_i].strip()
+	message = input_message[sender_i+1:].strip()
+
+	# Let's clean up sender and destination
+	sender = sender_original
+	# First we strip off '-comms' if it's included
+	if '-comms' in sender:
+		sender = sender[:sender.rfind('-comms')]
+	# Now let's disambig the team name
+	sender, sender_key = name_disambig(sender)
 
 	# Error Checking
-	if (fro_i < 1) or (fro_key.lower() not in team_comms_list): # not in correct channel
-		invalid_channel_error_msg = 'You cannot use this command in this channel.'
-		await client.say(invalid_channel_error_msg)
-		return
-	if len(input_message.strip()) < 1: # missing a message
-		not_valid_msg_format = 'Not a valid message. The correct format for this command is: "'
-		not_valid_msg_format += command_prefix + 'press_release [MESSAGE]".'
-		await client.say(not_valid_msg_format)
-		return
-	# Check if the user is a head-of-state. This command can only be used by heads-of-state
-	not_headofstate = False
-	if 'head of state'.lower() not in [role.name.lower() for role in user.roles]:
-		sec_gen_role = 'secretary-general of the united nations'
-		if sec_gen_role.lower() not in [role.name.lower() for role in user.roles]:
-			not_headofstate = True
+	# Check if the user of this commands has one of the correct roles
+	correct_role = False
+	for permission in role_permissions:
+		if permission in [role.name.lower() for role in user.roles]:
+			correct_role = True
+	if not correct_role:
+		if testing:
+			if user.name.lower() != 'pandiculate':
+				incorrect_role_error = 'You do not have permission to use this command.'
+				await client.say(incorrect_role_error)
+				return
 		else:
-			not_headofstate = False
-	if not_headofstate:
-		not_headofstate_error = 'Only Heads-of-State or UN Secretary Generals can use this '
-		not_headofstate_error += 'command in their respective -comms channel. All others '
-		not_headofstate_error += 'must go through news or with a Press conference.'
-		await client.say(not_headofstate_error)
+			incorrect_role_error = 'You do not have permission to use this command.'
+			await client.say(incorrect_role_error)
+			return
+	if sender_i < 0: # incorrect command format
+		not_valid_fakemsg_format = 'Not a valid `{}fakepress_release`'.format(command_prefix)
+		not_valid_fakemsg_format += ' format. The correct format for this command is:'
+		not_valid_fakemsg_format += '```{}fakepress_release '.format(command_prefix)
+		not_valid_fakemsg_format += '[SENDER] [MESSAGE]```'
+		await client.say(not_valid_fakemsg_format)
+		return
+	# trying to send to or from invalid team
+	if sender_key.lower() not in team_comms_list:
+		not_team_error_msg = '"' + sender_original + '"' + ' not a valid team. Try again.'
+		await client.say(not_team_error_msg)
 		return
 
-	# Send the message to its destination
-	fro_emoji = get_emoji(fro_key)
-	send_msg = 'Official press release from {}{}'.format(fro_emoji,fro.upper())
-	send_msg += ':\n"{}".'.format(input_message)
+	# Post the press-release to the #press-releases channel
+	sender_emoji = get_emoji(sender_key)
+	send_msg = 'Official press release from {}{}'.format(sender_emoji,sender.upper())
+	send_msg += ':\n"{}".'.format(message)
 	pr_channel = public_dict['press-releases'].mention
-	pr_announcement = 'New press release from {}{}! ({})'.format(fro_emoji,fro.upper(),pr_channel)
+	pr_announcement = 'New press release from '
+	pr_announcement += '{}{}! ({})'.format(sender_emoji,sender.upper(),pr_channel)
 	if testing:
 		await client.send_message(dev_dict['dev-press-releases'], send_msg)
 		for key, channel in dev_dict.items():
-			if channel.name != 'dev-press-releases':
+			if (channel.name != 'dev-press-releases') and ('-comms' in channel.name):
 				await client.send_message(channel, pr_announcement)
 	else:
 		await client.send_message(public_dict['press-releases'], send_msg)
@@ -847,12 +853,12 @@ async def fakepress_release(ctx, *, input_message: str):
 			await client.send_message(channel, pr_announcement)
 
 	# Logging message for game controllers
-	log_message = 'Head-of-State (' + user.name + ') from ' + fro + ' is publishing the '
-	log_message += 'following press release: "{}".'.format(input_message)
-	print(log_message)
+	log_msg = 'Fake press release sent from {}: "{}".'.format(sender, message)
+	print(log_msg)
 
 	# Confirmation message for the team sending the message
-	confirmation_message = 'Press release published successfully.'
+	confirmation_message = 'Fake press release sent from {}: '.format(sender)
+	confirmation_message += '"{}"'.format(message)
 	await client.say(confirmation_message)
 
 
