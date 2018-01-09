@@ -32,6 +32,7 @@ control_list = []
 control_dict = dict()
 category_list = []
 category_dict = dict()
+voice_dict = dict()
 dev_list = []
 dev_dict = dict()
 all_list = []
@@ -117,7 +118,9 @@ teamkeys = [	'usa',
 				'iran',
 				'japan',
 				'gnn',
-				'bnc']
+				'bnc'
+				'wfp'
+				'unhcr']
 teamemoji = [	':flag_us:',
 				'<:FlagUN:398385909705211906>',
 				':flag_gb:',
@@ -132,7 +135,9 @@ teamemoji = [	':flag_us:',
 				':flag_ir:',
 				':flag_jp:',
 				'<:LogoGNN:398385987719397377>',
-				'<:LogoBadgerNews:398385891434954753>']
+				'<:LogoBadgerNews:398385891434954753>',
+				'<:FlagUN:398385909705211906>',
+				'<:FlagUN:398385909705211906>']
 teamemoji_cu = [	':FlagUS:',
 					':FlagUN:',
 					':FlagUK:',
@@ -147,7 +152,9 @@ teamemoji_cu = [	':FlagUS:',
 					':flag_ir:',
 					':flag_jp:',
 					':LogoGNN:',
-					':LogoBadgerNews:']
+					':LogoBadgerNews:',
+					'<:FlagUN:398385909705211906>',
+					'<:FlagUN:398385909705211906>']
 # Create the flag_emoji_dict
 flag_emoji_dict = dict()
 for i in range(len(teamkeys)):
@@ -208,6 +215,17 @@ async def on_ready():
 	#	print(emoji)
 
 	print("##############################")
+
+	"""
+	for key, channel in all_dict.items():
+		print('key:', key)
+		print('channel:', channel.name)
+		if "Voice Chat".lower() in channel.name.lower():
+			print('VOICE CHANNEL --- channel type:', channel.type)
+			print('VOICE CHANNEL --- channel type typeof:', type(channel.type))
+			print('VOICE CHANNEL --- channel type = "voice"', channel.type == 'voice')
+			print('VOICE CHANNEL --- discord.ChannelType.voice', channel.type == discord.ChannelType.voice)
+	"""
 
 	#await client.send_message(dev_dict['dev-announcements'], dev_dict['dev-announcements'].mention)
 	#await client.send_message('')
@@ -478,7 +496,7 @@ async def blast(ctx, *, input_message: str):
 	
 	# Send the message to its destination
 	send_msg = input_message
-	''' send to all channels here '''
+	
 	if testing: # if this is True, we'll restrict this command to just message dev channels
 		for key, value in dev_dict.items():
 			await client.send_message(value, send_msg)
@@ -528,20 +546,32 @@ async def psa(ctx, *, input_message: str):
 				await client.say(not_announcer_error)
 				return
 		else:
+			if user.name.lower() != 'pandiculate':
+				not_announcer_error = 'Only an @announcer can use this command.'
+				await client.say(not_announcer_error)
+				return
+			'''
 			not_announcer_error = 'Only an @announcer can use this command.'
 			await client.say(not_announcer_error)
 			return
+			'''
 
 	
 	# Send the message to its destination
 	send_msg = PSA_str + input_message
-	''' send to all channels here '''
+	
 	if testing: # if this is True, we'll restrict this command to just message dev channels
 		for key, value in dev_dict.items():
 			await client.send_message(value, send_msg)
 	else: # otherwise everyone gets the message
+		#print(len(all_dict.keys()))
+		#i = 0
 		for key, value in all_dict.items():
+			#print(key, value)
+			#await client.send_message(dev_dict['dev-spam'], str(i))
+			#i += 1
 			await client.send_message(value, send_msg)
+		#return
 	#await client.send_message(public_dict['press-releases'], send_msg)
 
 	# Logging message for game controllers
@@ -600,7 +630,7 @@ async def an(ctx, *, input_message: str):
 	
 	# Send the message to its destination
 	send_msg = input_message
-	''' send to all channels here '''
+	
 	if testing: # if this is True, we'll restrict this command to just message dev channels
 		await client.send_message(dev_dict['dev-announcements'], send_msg)
 		for key, value in dev_dict.items():
@@ -899,7 +929,7 @@ async def next_phase(ctx):
 		send_msg = game_phase_change + current_phase
 
 	# Send the message to its destination
-	''' send to all channels here '''
+	
 	if testing: # if this is True, we'll restrict this command to just message dev channels
 		for key, value in dev_dict.items():
 			if key == 'dev-commandtesting':
@@ -951,7 +981,7 @@ async def set_phase(ctx, x: int):
 	if (x >= len(game_phases)) or (x < 0): # if the phase # chosen is out of range
 		outofrange_error = 'The phase number chosen is out of range. Must be greater or equal '
 		outofrange_error += 'to 0 and less than {}. You can use the '.format(len(game_phases))
-		outofrange_error +=
+		outofrange_error += '/list_phase command to see all the phases.'
 		await client.say(outofrange_error)
 		return
 
@@ -967,7 +997,7 @@ async def set_phase(ctx, x: int):
 		send_msg = game_phase_change + current_phase
 
 	# Send the message to its destination
-	''' send to all channels here '''
+	
 	if testing: # if this is True, we'll restrict this command to just message dev channels
 		for key, value in dev_dict.items():
 			if key == 'dev-commandtesting':
@@ -1032,7 +1062,7 @@ async def prev_phase(ctx):
 		send_msg = game_phase_change + current_phase
 
 	# Send the message to its destination
-	''' send to all channels here '''
+	
 	if testing: # if this is True, we'll restrict this command to just message dev channels
 		for key, value in dev_dict.items():
 			if key == 'dev-commandtesting':
@@ -1101,7 +1131,7 @@ async def last_phase(ctx):
 		send_msg = game_phase_change + current_phase
 
 	# Send the message to its destination
-	''' send to all channels here '''
+	
 	if testing: # if this is True, we'll restrict this command to just message dev channels
 		for key, value in dev_dict.items():
 			if key == 'dev-commandtesting':
@@ -1202,7 +1232,7 @@ async def end_phase(ctx):
 		send_msg = game_phase_change + current_phase
 
 	# Send the message to its destination
-	''' send to all channels here '''
+	
 	if testing: # if this is True, we'll restrict this command to just message dev channels
 		for key, value in dev_dict.items():
 			if key == 'dev-commandtesting':
@@ -1398,12 +1428,14 @@ def update_teams(verbose=False):
 				# special case for the dev channels
 				if channel_name in ['development', 'dev-comms', 'dev2-comms', 
 									'dev-commandtesting', 'dev-announcements',
-									'dev-press-releases']:
+									'dev-press-releases', 'dev-spam']:
 					dev_list.append(channel_name)
 					dev_dict[channel_name] = channel
 				if channel.type == 4: # catching all the categories
 					category_list.append(channel_name)
 					category_dict[channel_name] = channel
+				elif channel.type == discord.ChannelType.voice: # catching all voice channels
+					voice_dict[channel_name] = channel
 				elif channel_name == 'pre-game-planning':
 					pass
 				else: # all other channels will be added to the all list and dict
