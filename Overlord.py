@@ -606,7 +606,7 @@ async def agent(ctx, *, input_message: str):
 	agent_request_msg += '--------------------------------------------------\n'
 	agent_request_msg += 'Mission Roll:    {}, {} [{}]'.format(roll1, roll2, rollsum)
 
-	# Send the message to it's destination
+	# Send the message to its destination
 	covert_channel = control_dict['covert']
 	if testing:
 		await client.send_message(dev_dict['dev-comms'], agent_request_msg)
@@ -623,17 +623,440 @@ async def agent(ctx, *, input_message: str):
 	await client.say(confirmation_msg)
 
 
+###################################################################################################
+# Team-To-Control Commmands (commands for teams to communicate with control)
+###################################################################################################
+
+# These commands are for players to communicate with the various control teams. They use
+# /[CONTROL TEAM NAME] [MESSAGE] to contact the team and the message gets conveyed over to that
+# team.
+
+@client.command(pass_context=True)
+async def game(ctx, *, input_message: str):
+	""" A command for communicating with the game control team (#game-control)
+	"""
+
+	# Call get_sender_info() to get all the info
+	user, sender_i, sender, sender_key, sender_emoji = get_sender_info(ctx)
+
+	# Get the destination channel
+	control_team = 'Game'
+	destination = control_dict[control_team.lower()]
+
+	# Error Checking
+	if (sender_i < 1) or (sender_key.lower() not in team_comms_list): # not in correct channel
+		invalid_channel_error_msg = 'You cannot use this command in this channel.'
+		invalid_channel_error_msg += ' Use this in your "-comms" channel.'
+		await client.say(invalid_channel_error_msg)
+		return
+
+	# Get sender channel
+	sender_channel = team_comms_dict[sender_key]
+
+	# Let's build the output text sent to the control channel
+	ttc_msg = '{} from {}{} '.format(user.mention, sender_emoji, sender)
+	ttc_msg += '({}) has a message for {} Control:\n'.format(sender_channel.mention, control_team)
+	ttc_msg += '--------------------------------------------------\n'
+	ttc_msg += '{}\n'.format(input_message)
+	ttc_msg += '--------------------------------------------------\n'
+
+	# Send the message to its destination
+	if testing:
+		await client.send_message(dev_dict['dev-spam'], ttc_msg)
+	else:
+		await client.send_message(destination, ttc_msg)
+
+	# Logging message for game controllers
+	print(ttc_msg)
+
+	# Confirmation message
+	confirmation_msg = 'Your message has been sent to {} Control.'
+	await client.say(confirmation_msg)
+
+@client.command(pass_context=True)
+async def npc(ctx, *, input_message: str):
+	""" A command for communicating with the npc control team (#npc-control)
+	"""
+
+	# Call get_sender_info() to get all the info
+	user, sender_i, sender, sender_key, sender_emoji = get_sender_info(ctx)
+
+	# Get the destination channel
+	control_team = 'NPC'
+	destination = control_dict[control_team.lower()]
+
+	# Error Checking
+	if (sender_i < 1) or (sender_key.lower() not in team_comms_list): # not in correct channel
+		invalid_channel_error_msg = 'You cannot use this command in this channel.'
+		invalid_channel_error_msg += ' Use this in your "-comms" channel.'
+		await client.say(invalid_channel_error_msg)
+		return
+
+	# Get sender channel
+	sender_channel = team_comms_dict[sender_key]
+
+	# Let's build the output text sent to the control channel
+	ttc_msg = '{} from {}{} '.format(user.mention, sender_emoji, sender)
+	ttc_msg += '({}) has a message for {} Control:\n'.format(sender_channel.mention, control_team)
+	ttc_msg += '--------------------------------------------------\n'
+	ttc_msg += '{}\n'.format(input_message)
+	ttc_msg += '--------------------------------------------------\n'
+
+	# Send the message to its destination
+	if testing:
+		await client.send_message(dev_dict['dev-spam'], ttc_msg)
+	else:
+		await client.send_message(destination, ttc_msg)
+
+	# Logging message for game controllers
+	print(ttc_msg)
+
+	# Confirmation message
+	confirmation_msg = 'Your message has been sent to {} Control.'
+	await client.say(confirmation_msg)
+
+@client.command(pass_context=True)
+async def covert(ctx, *, input_message: str):
+	""" A command for communicating with the covert control team (#covert-control)
+	"""
+
+	# Call get_sender_info() to get all the info
+	user, sender_i, sender, sender_key, sender_emoji = get_sender_info(ctx)
+
+	# Get the destination channel
+	control_team = 'Covert'
+	destination = control_dict[control_team.lower()]
+
+	# Error Checking
+	if (sender_i < 1) or (sender_key.lower() not in team_comms_list): # not in correct channel
+		invalid_channel_error_msg = 'You cannot use this command in this channel.'
+		invalid_channel_error_msg += ' Use this in your "-comms" channel.'
+		await client.say(invalid_channel_error_msg)
+		return
+
+	# Get sender channel
+	sender_channel = team_comms_dict[sender_key]
+
+	# Let's build the output text sent to the control channel
+	ttc_msg = '{} from {}{} '.format(user.mention, sender_emoji, sender)
+	ttc_msg += '({}) has a message for {} Control:\n'.format(sender_channel.mention, control_team)
+	ttc_msg += '--------------------------------------------------\n'
+	ttc_msg += '{}\n'.format(input_message)
+	ttc_msg += '--------------------------------------------------\n'
+
+	# Send the message to its destination
+	if testing:
+		await client.send_message(dev_dict['dev-spam'], ttc_msg)
+	else:
+		await client.send_message(destination, ttc_msg)
+
+	# Logging message for game controllers
+	print(ttc_msg)
+
+	# Confirmation message
+	confirmation_msg = 'Your message has been sent to {} Control.'
+	await client.say(confirmation_msg)
+
+@client.command(pass_context=True)
+async def national(ctx, *, input_message: str):
+	""" A command for communicating with the national control team (#national-control)
+	"""
+
+	# Call get_sender_info() to get all the info
+	user, sender_i, sender, sender_key, sender_emoji = get_sender_info(ctx)
+
+	# Get the destination channel
+	control_team = 'National'
+	destination = control_dict[control_team.lower()]
+
+	# Error Checking
+	if (sender_i < 1) or (sender_key.lower() not in team_comms_list): # not in correct channel
+		invalid_channel_error_msg = 'You cannot use this command in this channel.'
+		invalid_channel_error_msg += ' Use this in your "-comms" channel.'
+		await client.say(invalid_channel_error_msg)
+		return
+
+	# Get sender channel
+	sender_channel = team_comms_dict[sender_key]
+
+	# Let's build the output text sent to the control channel
+	ttc_msg = '{} from {}{} '.format(user.mention, sender_emoji, sender)
+	ttc_msg += '({}) has a message for {} Control:\n'.format(sender_channel.mention, control_team)
+	ttc_msg += '--------------------------------------------------\n'
+	ttc_msg += '{}\n'.format(input_message)
+	ttc_msg += '--------------------------------------------------\n'
+
+	# Send the message to its destination
+	if testing:
+		await client.send_message(dev_dict['dev-spam'], ttc_msg)
+	else:
+		await client.send_message(destination, ttc_msg)
+
+	# Logging message for game controllers
+	print(ttc_msg)
+
+	# Confirmation message
+	confirmation_msg = 'Your message has been sent to {} Control.'
+	await client.say(confirmation_msg)
+
+@client.command(pass_context=True)
+async def globe(ctx, *, input_message: str):
+	""" A command for communicating with the globe control team (#globe-control)
+	"""
+
+	# Call get_sender_info() to get all the info
+	user, sender_i, sender, sender_key, sender_emoji = get_sender_info(ctx)
+
+	# Get the destination channel
+	control_team = 'Globe'
+	destination = control_dict[control_team.lower()]
+
+	# Error Checking
+	if (sender_i < 1) or (sender_key.lower() not in team_comms_list): # not in correct channel
+		invalid_channel_error_msg = 'You cannot use this command in this channel.'
+		invalid_channel_error_msg += ' Use this in your "-comms" channel.'
+		await client.say(invalid_channel_error_msg)
+		return
+
+	# Get sender channel
+	sender_channel = team_comms_dict[sender_key]
+
+	# Let's build the output text sent to the control channel
+	ttc_msg = '{} from {}{} '.format(user.mention, sender_emoji, sender)
+	ttc_msg += '({}) has a message for {} Control:\n'.format(sender_channel.mention, control_team)
+	ttc_msg += '--------------------------------------------------\n'
+	ttc_msg += '{}\n'.format(input_message)
+	ttc_msg += '--------------------------------------------------\n'
+
+	# Send the message to its destination
+	if testing:
+		await client.send_message(dev_dict['dev-spam'], ttc_msg)
+	else:
+		await client.send_message(destination, ttc_msg)
+
+	# Logging message for game controllers
+	print(ttc_msg)
+
+	# Confirmation message
+	confirmation_msg = 'Your message has been sent to {} Control.'
+	await client.say(confirmation_msg)
+
+@client.command(pass_context=True)
+async def un(ctx, *, input_message: str):
+	""" A command for communicating with the un control team (#un-control)
+	"""
+
+	# Call get_sender_info() to get all the info
+	user, sender_i, sender, sender_key, sender_emoji = get_sender_info(ctx)
+
+	# Get the destination channel
+	control_team = 'UN'
+	destination = control_dict[control_team.lower()]
+
+	# Error Checking
+	if (sender_i < 1) or (sender_key.lower() not in team_comms_list): # not in correct channel
+		invalid_channel_error_msg = 'You cannot use this command in this channel.'
+		invalid_channel_error_msg += ' Use this in your "-comms" channel.'
+		await client.say(invalid_channel_error_msg)
+		return
+
+	# Get sender channel
+	sender_channel = team_comms_dict[sender_key]
+
+	# Let's build the output text sent to the control channel
+	ttc_msg = '{} from {}{} '.format(user.mention, sender_emoji, sender)
+	ttc_msg += '({}) has a message for {} Control:\n'.format(sender_channel.mention, control_team)
+	ttc_msg += '--------------------------------------------------\n'
+	ttc_msg += '{}\n'.format(input_message)
+	ttc_msg += '--------------------------------------------------\n'
+
+	# Send the message to its destination
+	if testing:
+		await client.send_message(dev_dict['dev-spam'], ttc_msg)
+	else:
+		await client.send_message(destination, ttc_msg)
+
+	# Logging message for game controllers
+	print(ttc_msg)
+
+	# Confirmation message
+	confirmation_msg = 'Your message has been sent to {} Control.'
+	await client.say(confirmation_msg)
+
+@client.command(pass_context=True)
+async def science(ctx, *, input_message: str):
+	""" A command for communicating with the science control team (#science-control)
+	"""
+
+	# Call get_sender_info() to get all the info
+	user, sender_i, sender, sender_key, sender_emoji = get_sender_info(ctx)
+
+	# Get the destination channel
+	control_team = 'Science'
+	destination = control_dict[control_team.lower()]
+
+	# Error Checking
+	if (sender_i < 1) or (sender_key.lower() not in team_comms_list): # not in correct channel
+		invalid_channel_error_msg = 'You cannot use this command in this channel.'
+		invalid_channel_error_msg += ' Use this in your "-comms" channel.'
+		await client.say(invalid_channel_error_msg)
+		return
+
+	# Get sender channel
+	sender_channel = team_comms_dict[sender_key]
+
+	# Let's build the output text sent to the control channel
+	ttc_msg = '{} from {}{} '.format(user.mention, sender_emoji, sender)
+	ttc_msg += '({}) has a message for {} Control:\n'.format(sender_channel.mention, control_team)
+	ttc_msg += '--------------------------------------------------\n'
+	ttc_msg += '{}\n'.format(input_message)
+	ttc_msg += '--------------------------------------------------\n'
+
+	# Send the message to its destination
+	if testing:
+		await client.send_message(dev_dict['dev-spam'], ttc_msg)
+	else:
+		await client.send_message(destination, ttc_msg)
+
+	# Logging message for game controllers
+	print(ttc_msg)
+
+	# Confirmation message
+	confirmation_msg = 'Your message has been sent to {} Control.'
+	await client.say(confirmation_msg)
+
+@client.command(pass_context=True)
+async def media(ctx, *, input_message: str):
+	""" A command for communicating with the media control team (#media-control)
+	"""
+
+	# Call get_sender_info() to get all the info
+	user, sender_i, sender, sender_key, sender_emoji = get_sender_info(ctx)
+
+	# Get the destination channel
+	control_team = 'Media'
+	destination = control_dict[control_team.lower()]
+
+	# Error Checking
+	if (sender_i < 1) or (sender_key.lower() not in team_comms_list): # not in correct channel
+		invalid_channel_error_msg = 'You cannot use this command in this channel.'
+		invalid_channel_error_msg += ' Use this in your "-comms" channel.'
+		await client.say(invalid_channel_error_msg)
+		return
+
+	# Get sender channel
+	sender_channel = team_comms_dict[sender_key]
+
+	# Let's build the output text sent to the control channel
+	ttc_msg = '{} from {}{} '.format(user.mention, sender_emoji, sender)
+	ttc_msg += '({}) has a message for {} Control:\n'.format(sender_channel.mention, control_team)
+	ttc_msg += '--------------------------------------------------\n'
+	ttc_msg += '{}\n'.format(input_message)
+	ttc_msg += '--------------------------------------------------\n'
+
+	# Send the message to its destination
+	if testing:
+		await client.send_message(dev_dict['dev-spam'], ttc_msg)
+	else:
+		await client.send_message(destination, ttc_msg)
+
+	# Logging message for game controllers
+	print(ttc_msg)
+
+	# Confirmation message
+	confirmation_msg = 'Your message has been sent to {} Control.'
+	await client.say(confirmation_msg)
+
+@client.command(pass_context=True)
+async def alien(ctx, *, input_message: str):
+	""" A command for communicating with the alien control team (#alien-control)
+	"""
+
+	# Call get_sender_info() to get all the info
+	user, sender_i, sender, sender_key, sender_emoji = get_sender_info(ctx)
+
+	# Get the destination channel
+	control_team = 'Alien'
+	destination = control_dict[control_team.lower()]
+
+	# Error Checking
+	if (sender_i < 1) or (sender_key.lower() not in team_comms_list): # not in correct channel
+		invalid_channel_error_msg = 'You cannot use this command in this channel.'
+		invalid_channel_error_msg += ' Use this in your "-comms" channel.'
+		await client.say(invalid_channel_error_msg)
+		return
+
+	# Get sender channel
+	sender_channel = team_comms_dict[sender_key]
+
+	# Let's build the output text sent to the control channel
+	ttc_msg = '{} from {}{} '.format(user.mention, sender_emoji, sender)
+	ttc_msg += '({}) has a message for {} Control:\n'.format(sender_channel.mention, control_team)
+	ttc_msg += '--------------------------------------------------\n'
+	ttc_msg += '{}\n'.format(input_message)
+	ttc_msg += '--------------------------------------------------\n'
+
+	# Send the message to its destination
+	if testing:
+		await client.send_message(dev_dict['dev-spam'], ttc_msg)
+	else:
+		await client.send_message(destination, ttc_msg)
+
+	# Logging message for game controllers
+	print(ttc_msg)
+
+	# Confirmation message
+	confirmation_msg = 'Your message has been sent to {} Control.'
+	await client.say(confirmation_msg)
+
+# Helper function for the team-to-control commands
+def get_sender_info(ctx):
+	""" Helper function for the team-to-control commands to get all the sender info stuff.
+	Returns
+	"""
+
+	# Get the user info for the person who wrote this command
+	user = ctx.message.author
+
+	# Get the channel this was sent by
+	sender_original = ctx.message.channel.name
+	sender_i = sender_original.rfind('-comms')
+	sender = sender_original[:sender_i]
+	sender, sender_key = name_disambig(sender)
+
+	# Get sender emoji
+	sender_emoji = get_emoji(sender_key)
+
+	return user, sender_i, sender, sender_key, sender_emoji
+
+
 
 """
+TO-DO
+
+DONE
 game
-covert
 npc
+covert
 national
 globe
 un
 science
 media
 alien
+
+
+
+{'game': <discord.channel.Channel object at 0x10df2ef48>, 
+'npc': <discord.channel.Channel object at 0x10df334c8>, 
+'globe': <discord.channel.Channel object at 0x10df337c8>, 
+'national': <discord.channel.Channel object at 0x10df38b48>, 
+'un': <discord.channel.Channel object at 0x10df3c9c8>, 
+'alien': <discord.channel.Channel object at 0x10df41248>, 
+'media': <discord.channel.Channel object at 0x10df41648>, 
+'covert': <discord.channel.Channel object at 0x10df41a48>, 
+'science': <discord.channel.Channel object at 0x10df45448>}
+
 """
 
 
