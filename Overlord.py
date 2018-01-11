@@ -326,7 +326,12 @@ async def msg(ctx, *, input_message: str):
 
 	# Getting the sending team's name 
 	fro_original = ctx.message.channel.name
-	fro_i = fro_original.rfind('-comms')
+	from_control = False
+	if '-control' in fro_original.lower():
+		fro_i = fro_original.rfind('-control')
+		from_control = True
+	else:
+		fro_i = fro_original.rfind('-comms')
 	fro = fro_original[:fro_i]
 	fro, fro_key = name_disambig(fro)
 
@@ -345,14 +350,16 @@ async def msg(ctx, *, input_message: str):
 	"""
 
 	# Error Checking
-	if (fro_i < 1) or (fro_key.lower() not in team_comms_list): # not in correct channel
-		#print(fro_i)
-		#print(fro.lower())
-		#print(team_comms_list)
-		invalid_channel_error_msg = 'You cannot use this command in this channel.'
-		invalid_channel_error_msg += ' Use this in your "-comms" channel.'
-		await client.say(invalid_channel_error_msg)
-		return
+	# Not in correct channel (or not from control)
+	if (fro_i < 1) or (fro_key.lower() not in team_comms_list):
+		if not from_control:
+			#print(fro_i)
+			#print(fro.lower())
+			#print(team_comms_list)
+			invalid_channel_error_msg = 'You cannot use this command in this channel.'
+			invalid_channel_error_msg += ' Use this in your "-comms" channel.'
+			await client.say(invalid_channel_error_msg)
+			return
 	if to_i < 1: # missing a message
 		not_valid_msg_format = 'Not a valid message. The correct format for this command is: "'
 		not_valid_msg_format += command_prefix + 'msg [DESTINATION] [MESSAGE]".'
@@ -369,10 +376,16 @@ async def msg(ctx, *, input_message: str):
 		return
 
 	# Send the message to its destination
-	fro_emoji = get_emoji(fro_key)
-	send_msg = 'Incoming message from {}{}:\n"{}".'.format(fro_emoji,fro,message)
-	#send_msg = 'Incoming message from ' + fro + ':\n"' + message + '".'
-	await client.send_message(team_comms_dict[to_key.lower()], send_msg)
+	if from_control:
+		fro_emoji = '<:WTSblack:398402231432511500>'
+		control_fro = fro.title() + '-control'
+		send_msg = 'Incoming message from {}{}:\n"{}".'.format(fro_emoji,control_fro,message)
+		await client.send_message(team_comms_dict[to_key.lower()], send_msg)
+	else:
+		fro_emoji = get_emoji(fro_key)
+		send_msg = 'Incoming message from {}{}:\n"{}".'.format(fro_emoji,fro,message)
+		#send_msg = 'Incoming message from ' + fro + ':\n"' + message + '".'
+		await client.send_message(team_comms_dict[to_key.lower()], send_msg)
 
 	# Logging message for game controllers
 	print(fro + ' sending message: ' + '"' + message + '"' + ' to ' + to + '.')
@@ -440,8 +453,8 @@ async def press_release(ctx, *, input_message: str):
 			else:
 				not_headofstate = False
 	if not_headofstate:
-		not_headofstate_error = 'Only Heads-of-State or UN Secretary Generals can use this '
-		not_headofstate_error += 'command in their respective -comms channel. All others '
+		not_headofstate_error = 'Only Heads-of-State, UN Secretary Generals, or Lead Editos can '
+		not_headofstate_error += 'use this command in their respective -comms channel. All others '
 		not_headofstate_error += 'must go through news or with a Press conference.'
 		await client.say(not_headofstate_error)
 		return
@@ -607,7 +620,7 @@ async def agent(ctx, *, input_message: str):
 	# Confirmation message
 	confirmation_msg = 'Agent action request has been sent to @Covert Control. Please '
 	confirmation_msg += 'wait to hear back from them regarding the outcome.'
-	await client.say(confirmation_message)
+	await client.say(confirmation_msg)
 
 
 
