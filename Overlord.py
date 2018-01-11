@@ -118,8 +118,8 @@ teamkeys = [	'usa',
 				'iran',
 				'japan',
 				'gnn',
-				'bnc'
-				'wfp'
+				'bnc',
+				'wfp',
 				'unhcr']
 teamemoji = [	':flag_us:',
 				'<:FlagUN:398385909705211906>',
@@ -159,6 +159,16 @@ teamemoji_cu = [	':FlagUS:',
 flag_emoji_dict = dict()
 for i in range(len(teamkeys)):
 	flag_emoji_dict[teamkeys[i]] = teamemoji[i]
+
+# Agent choices list (len 28)
+agent_choices = [
+	' successful survival secret ',
+	' successful secret survival ',
+	' survival successful secret ',
+	' survival secret successful ',
+	' secret survival successful ',
+	' secret successful survival '
+]
 
 # Creating the bot client
 command_prefix = '/' # this is the prefix used in front of each command
@@ -226,7 +236,7 @@ async def on_ready():
 			print('VOICE CHANNEL --- channel type = "voice"', channel.type == 'voice')
 			print('VOICE CHANNEL --- discord.ChannelType.voice', channel.type == discord.ChannelType.voice)
 	"""
-
+	#await client.send_message(dev_dict['dev2-comms'], flag_emoji_dict['unhcr'])
 	#await client.send_message(dev_dict['dev-announcements'], dev_dict['dev-announcements'].mention)
 	#await client.send_message('')
 
@@ -252,7 +262,7 @@ async def on_member_join(member):
 async def ping(*args):
 	""" A ping command for the Sky Watcher """
 	pinguser = "User"
-	print("User " + pinguser + " is pinging the Sky Watcher.")
+	print("User is pinging the Sky Watcher.")
 	await client.say(":ping_pong: Pong!")
 	#await asyncio.sleep(3)
 
@@ -340,6 +350,7 @@ async def msg(ctx, *, input_message: str):
 		#print(fro.lower())
 		#print(team_comms_list)
 		invalid_channel_error_msg = 'You cannot use this command in this channel.'
+		invalid_channel_error_msg += ' Use this in your "-comms" channel.'
 		await client.say(invalid_channel_error_msg)
 		return
 	if to_i < 1: # missing a message
@@ -410,6 +421,7 @@ async def press_release(ctx, *, input_message: str):
 	# Error Checking
 	if (fro_i < 1) or (fro_key.lower() not in team_comms_list): # not in correct channel
 		invalid_channel_error_msg = 'You cannot use this command in this channel.'
+		invalid_channel_error_msg += ' Use this in your "-comms" channel.'
 		await client.say(invalid_channel_error_msg)
 		return
 	if len(input_message.strip()) < 1: # missing a message
@@ -456,6 +468,146 @@ async def press_release(ctx, *, input_message: str):
 	# Confirmation message for the team sending the message
 	confirmation_message = 'Press release published successfully.'
 	await client.say(confirmation_message)
+
+
+# Command for players to request an agent action. They rank the agent success choices 
+# (survival/success/secret) and a mission, and covert-control determines what actually happens
+@client.command(pass_context=True)
+async def agent(ctx, *, input_message: str):
+	""" Command for players to request an agent action. They rank the agent success choices 
+	(survival/success/secret) and a mission. The game does a roll, and sends the whole thing as
+	a structured message to #covert-control, who then determines what happens. Command format:
+	/agent [LOCATION/TARGET] [1ST SUCCESS CHOICE] [2ND SUCCESS CHOICE] [3RD SUCCESS CHOICE] [MISSION]
+	"""
+
+	# Get the user info for the person who wrote this command
+	user = ctx.message.author
+
+	# Get the channel this was sent by
+	sender_original = ctx.message.channel.name
+	sender_i = sender_original.rfind('-comms')
+	sender = sender_original[:sender_i]
+	sender, sender_key = name_disambig(sender)
+
+	# Let's parse out all the parts of the command
+	choice_found = False
+	multiple_choices_found = False
+	choices_offset = len(agent_choices[0])
+	message_lower_case = ' ' + input_message.lower()
+	choices_start_i = len(message_lower_case)
+	for choice in agent_choices: # look for the first instance of 
+		if choice in message_lower_case:
+			if choice_found: # if we've already found one <--- problem
+				multiple_choices_found = True
+			found_i = message_lower_case.find(choice)
+			#print(found_i)
+			if message_lower_case.find(choice) < choices_start_i:
+				choices_start_i = message_lower_case.find(choice) - 1
+			choice_found = True
+	choices_end_i = choices_start_i + choices_offset # get the ending index
+
+	# Get a string of all the choices, ranked, and parse each out
+	choice_rank = input_message[choices_start_i:choices_end_i]
+	choice_rank_list = choice_rank.split()
+	choices_error = False
+	if len(choice_rank_list) == 3:
+		choice1 = choice_rank_list[0].title()
+		choice2 = choice_rank_list[1].title()
+		choice3 = choice_rank_list[2].title()
+	else:
+		#print(choice_rank_list)
+		#print(choices_start_i)
+		#print(input_message)
+		choices_error = True
+
+	# Parse the [LOCATION/TARGET] and [MISSION]
+	target = input_message[:choices_start_i].strip()
+	mission = input_message[choices_end_i:].strip()
+
+	# Tries to see if the target is one that exists in the emoji list
+	if ' ' not in target:
+		target, target_key = name_disambig(target)
+	else:
+		target_key = ''
+
+	# Error Checking
+	correct_fmt_str = 'Correct format is: ```/agent [LOCATION/TARGET] ' 
+	correct_fmt_str += '[1ST SUCCESS CHOICE] [2ND SUCCESS CHOICE] '
+	correct_fmt_str += '[3RD SUCCESS CHOICE] [MISSION]```'
+	if (sender_i < 1) or (sender_key.lower() not in team_comms_list): # not in correct channel
+		invalid_channel_error_msg = 'You cannot use this command in this channel.'
+		invalid_channel_error_msg += ' Use this in your "-comms" channel.'
+		await client.say(invalid_channel_error_msg)
+		return
+	if multiple_choices_found: # the command's inputted parameters (for choice rank) was ambiguous
+		ambiguous_choices_error_msg = 'Choice ranks were too ambiguous. Please '
+		ambiguous_choices_error_msg += 'only include one set of [successful/survival/secret] '
+		ambiguous_choices_error_msg += '(seperated by spaces) after the [LOCATION/TARGET] and '
+		ambiguous_choices_error_msg += 'before the [MISSION].'
+		await client.say(ambiguous_choices_error_msg)
+		return
+	if choices_error: # incorrect format (we're missing three choices)
+		incorrect_command_fmt_error = 'Incorrect message format. '
+		incorrect_command_fmt_error += correct_fmt_str
+		await client.say(incorrect_command_fmt_error)
+		return
+	if len(target) < 1: # [LOCATION/DESTINATION] is missing
+		target_missing_error_msg = 'Missing a [LOCATION/DESTINATION] in this command. '
+		target_missing_error_msg += correct_fmt_str
+		await client.say(target_missing_error_msg)
+		return
+	if len(mission) < 1: # [MISSION] is missing
+		mission_missing_error_msg = 'Missing a [MISSION] in this command. '
+		mission_missing_error_msg += correct_fmt_str
+		await client.say(mission_missing_error_msg)
+		return
+
+	# Diagnostic messages
+	"""
+	print('target:', target)
+	print('mission:', mission)
+	print('choice1', choice1)
+	print('choice2', choice2)
+	print('choice3', choice3)
+	"""
+
+	# Let's get some of the variables for the final message
+	sender_emoji = get_emoji(sender_key)
+	target_emoji = get_emoji(target_key)
+
+	# Let's do the rolls
+	roll1 = random.randint(1, 6)
+	roll2 = random.randint(1, 6)
+	rollsum = roll1 + roll2
+
+	# Let's build the output text sent to #covert-control
+	agent_request_msg = '{}{} has requested an agent action\n'.format(sender_emoji, sender)
+	agent_request_msg += '--------------------------------------------------\n'
+	agent_request_msg += 'Target/Location: {}{}\n'.format(target_emoji, target)
+	agent_request_msg += '--------------------------------------------------\n'
+	agent_request_msg += 'Mission Details: {}\n'.format(mission)
+	agent_request_msg += '--------------------------------------------------\n'
+	agent_request_msg += 'Priority:        {} | {} | {}\n'.format(choice1, choice2, choice3)
+	agent_request_msg += '--------------------------------------------------\n'
+	agent_request_msg += 'Mission Roll:    {}, {} [{}]'.format(roll1, roll2, rollsum)
+
+	# Send the message to it's destination
+	covert_channel = control_dict['covert']
+	if testing:
+		await client.send_message(dev_dict['dev-comms'], agent_request_msg)
+		#await client.send_message(covert_channel, agent_request_msg)
+	else:
+		await client.send_message(covert_channel, agent_request_msg)
+
+	# Logging message for game controllers
+	print(agent_request_msg)
+
+	# Confirmation message
+	confirmation_msg = 'Agent action request has been sent to @Covert Control. Please '
+	confirmation_msg += 'wait to hear back from them regarding the outcome.'
+	await client.say(confirmation_message)
+
+
 
 
 ###################################################################################################
