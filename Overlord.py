@@ -390,7 +390,7 @@ async def msg(ctx, *, input_message: str):
 async def press_release(ctx, *, input_message: str):
 	""" Publishes a press release to the press-releases channel under the team's name.
 	Can only be published by someone with a @Head of State role tag or
-	@Secretary-General of the United Nations tag. Command format:
+	@Secretary-General of the United Nations or @Lead Editor tag. Command format:
 	/press_release
 	"""
 
@@ -434,9 +434,11 @@ async def press_release(ctx, *, input_message: str):
 	if 'head of state'.lower() not in [role.name.lower() for role in user.roles]:
 		sec_gen_role = 'secretary-general of the united nations'
 		if sec_gen_role.lower() not in [role.name.lower() for role in user.roles]:
-			not_headofstate = True
-		else:
-			not_headofstate = False
+			lead_editor_role = 'lead editor'
+			if lead_editor_role.lower() not in [role.name.lower() for role in user.roles]:
+				not_headofstate = True
+			else:
+				not_headofstate = False
 	if not_headofstate:
 		not_headofstate_error = 'Only Heads-of-State or UN Secretary Generals can use this '
 		not_headofstate_error += 'command in their respective -comms channel. All others '
@@ -606,6 +608,21 @@ async def agent(ctx, *, input_message: str):
 	confirmation_msg = 'Agent action request has been sent to @Covert Control. Please '
 	confirmation_msg += 'wait to hear back from them regarding the outcome.'
 	await client.say(confirmation_message)
+
+
+
+"""
+game
+covert
+npc
+national
+globe
+un
+science
+media
+alien
+"""
+
 
 
 
