@@ -644,10 +644,9 @@ async def game(ctx, *, input_message: str):
 	destination = control_dict[control_team.lower()]
 
 	# Error Checking
-	if (sender_i < 1) or (sender_key.lower() not in team_comms_list): # not in correct channel
-		invalid_channel_error_msg = 'You cannot use this command in this channel.'
-		invalid_channel_error_msg += ' Use this in your "-comms" channel.'
-		await client.say(invalid_channel_error_msg)
+	all_good, error_msg = ttc_error_check(sender_i, sender_key)
+	if not all_good:
+		await client.say(error_msg)
 		return
 
 	# Get sender channel
@@ -686,10 +685,9 @@ async def npc(ctx, *, input_message: str):
 	destination = control_dict[control_team.lower()]
 
 	# Error Checking
-	if (sender_i < 1) or (sender_key.lower() not in team_comms_list): # not in correct channel
-		invalid_channel_error_msg = 'You cannot use this command in this channel.'
-		invalid_channel_error_msg += ' Use this in your "-comms" channel.'
-		await client.say(invalid_channel_error_msg)
+	all_good, error_msg = ttc_error_check(sender_i, sender_key)
+	if not all_good:
+		await client.say(error_msg)
 		return
 
 	# Get sender channel
@@ -728,10 +726,9 @@ async def covert(ctx, *, input_message: str):
 	destination = control_dict[control_team.lower()]
 
 	# Error Checking
-	if (sender_i < 1) or (sender_key.lower() not in team_comms_list): # not in correct channel
-		invalid_channel_error_msg = 'You cannot use this command in this channel.'
-		invalid_channel_error_msg += ' Use this in your "-comms" channel.'
-		await client.say(invalid_channel_error_msg)
+	all_good, error_msg = ttc_error_check(sender_i, sender_key)
+	if not all_good:
+		await client.say(error_msg)
 		return
 
 	# Get sender channel
@@ -770,10 +767,9 @@ async def national(ctx, *, input_message: str):
 	destination = control_dict[control_team.lower()]
 
 	# Error Checking
-	if (sender_i < 1) or (sender_key.lower() not in team_comms_list): # not in correct channel
-		invalid_channel_error_msg = 'You cannot use this command in this channel.'
-		invalid_channel_error_msg += ' Use this in your "-comms" channel.'
-		await client.say(invalid_channel_error_msg)
+	all_good, error_msg = ttc_error_check(sender_i, sender_key)
+	if not all_good:
+		await client.say(error_msg)
 		return
 
 	# Get sender channel
@@ -812,10 +808,9 @@ async def globe(ctx, *, input_message: str):
 	destination = control_dict[control_team.lower()]
 
 	# Error Checking
-	if (sender_i < 1) or (sender_key.lower() not in team_comms_list): # not in correct channel
-		invalid_channel_error_msg = 'You cannot use this command in this channel.'
-		invalid_channel_error_msg += ' Use this in your "-comms" channel.'
-		await client.say(invalid_channel_error_msg)
+	all_good, error_msg = ttc_error_check(sender_i, sender_key)
+	if not all_good:
+		await client.say(error_msg)
 		return
 
 	# Get sender channel
@@ -854,10 +849,9 @@ async def un(ctx, *, input_message: str):
 	destination = control_dict[control_team.lower()]
 
 	# Error Checking
-	if (sender_i < 1) or (sender_key.lower() not in team_comms_list): # not in correct channel
-		invalid_channel_error_msg = 'You cannot use this command in this channel.'
-		invalid_channel_error_msg += ' Use this in your "-comms" channel.'
-		await client.say(invalid_channel_error_msg)
+	all_good, error_msg = ttc_error_check(sender_i, sender_key)
+	if not all_good:
+		await client.say(error_msg)
 		return
 
 	# Get sender channel
@@ -896,10 +890,9 @@ async def science(ctx, *, input_message: str):
 	destination = control_dict[control_team.lower()]
 
 	# Error Checking
-	if (sender_i < 1) or (sender_key.lower() not in team_comms_list): # not in correct channel
-		invalid_channel_error_msg = 'You cannot use this command in this channel.'
-		invalid_channel_error_msg += ' Use this in your "-comms" channel.'
-		await client.say(invalid_channel_error_msg)
+	all_good, error_msg = ttc_error_check(sender_i, sender_key)
+	if not all_good:
+		await client.say(error_msg)
 		return
 
 	# Get sender channel
@@ -938,10 +931,9 @@ async def media(ctx, *, input_message: str):
 	destination = control_dict[control_team.lower()]
 
 	# Error Checking
-	if (sender_i < 1) or (sender_key.lower() not in team_comms_list): # not in correct channel
-		invalid_channel_error_msg = 'You cannot use this command in this channel.'
-		invalid_channel_error_msg += ' Use this in your "-comms" channel.'
-		await client.say(invalid_channel_error_msg)
+	all_good, error_msg = ttc_error_check(sender_i, sender_key)
+	if not all_good:
+		await client.say(error_msg)
 		return
 
 	# Get sender channel
@@ -973,17 +965,16 @@ async def alien(ctx, *, input_message: str):
 	"""
 
 	# Call get_sender_info() to get all the info
-	user, sender_i, sender, sender_key, sender_emoji = get_sender_info(ctx)
+	user, sender_i, sender, sender_key, sender_emoji = ttc_get_sender_info(ctx)
 
 	# Get the destination channel
 	control_team = 'Alien'
 	destination = control_dict[control_team.lower()]
 
 	# Error Checking
-	if (sender_i < 1) or (sender_key.lower() not in team_comms_list): # not in correct channel
-		invalid_channel_error_msg = 'You cannot use this command in this channel.'
-		invalid_channel_error_msg += ' Use this in your "-comms" channel.'
-		await client.say(invalid_channel_error_msg)
+	all_good, error_msg = ttc_error_check(sender_i, sender_key)
+	if not all_good:
+		await client.say(error_msg)
 		return
 
 	# Get sender channel
@@ -1009,10 +1000,13 @@ async def alien(ctx, *, input_message: str):
 	confirmation_msg = 'Your message has been sent to {} Control.'
 	await client.say(confirmation_msg)
 
-# Helper function for the team-to-control commands
-def get_sender_info(ctx):
+
+########## Helper functions for the ttc commands
+
+# Helper function for the team-to-control commands to get all sender into
+def ttc_get_sender_info(ctx):
 	""" Helper function for the team-to-control commands to get all the sender info stuff.
-	Returns
+	Returns user object, sender_i index, sender, sender_key, and a sender emoji (if exists)
 	"""
 
 	# Get the user info for the person who wrote this command
@@ -1029,6 +1023,39 @@ def get_sender_info(ctx):
 
 	return user, sender_i, sender, sender_key, sender_emoji
 
+# Helper fxn for ttc commands to error check and return the message string
+def ttc_error_check(sender_i, sender_key):
+	""" Helper function for the ttc commands to error check.
+	Returns True if everything is good (and a blank error message), otherwise returns False
+	and returns an error message
+	"""
+
+	# Error Checking
+	if (sender_i < 1) or (sender_key.lower() not in team_comms_list): # not in correct channel
+		invalid_channel_error_msg = 'You cannot use this command in this channel.'
+		invalid_channel_error_msg += ' Use this in your "-comms" channel.'
+		#await client.say(invalid_channel_error_msg)
+		return False, invalid_channel_error_msg
+
+	return True, ''
+
+# Helper function for ttc commands for returning a string of the message to send to the respective
+# control team
+def ttc_return_msg(user, sender, sender_key, sender_emoji, control_team):
+	""" Helper function for building the message that will be received by the control team
+	"""
+
+	# Get sender channel
+	sender_channel = team_comms_dict[sender_key]
+
+	# Let's build the output text sent to the control channel
+	ttc_msg = '{} from {}{} '.format(user.mention, sender_emoji, sender)
+	ttc_msg += '({}) has a message for {} Control:\n'.format(sender_channel.mention, control_team)
+	ttc_msg += '--------------------------------------------------\n'
+	ttc_msg += '{}\n'.format(input_message)
+	ttc_msg += '--------------------------------------------------\n'
+
+	return ttc_msg
 
 
 """
