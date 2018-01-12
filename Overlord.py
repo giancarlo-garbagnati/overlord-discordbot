@@ -372,6 +372,15 @@ async def msg(ctx, *, input_message: str):
 	# Get the user info
 	user = ctx.message.author
 
+	# Player roles that a player must have to use this command
+	permissions = [
+		'diplomat',
+		'head of state',
+		'lead editor',
+		'secretary-general of the united nations',
+		'extraterrestrial organism'
+	]
+
 	# Parse out the name of the destination country from the message
 	to_i = input_message.find(' ')
 	to_unfmt = input_message[0:to_i]
@@ -406,10 +415,14 @@ async def msg(ctx, *, input_message: str):
 	alien_destination_allowed = False
 	alien_destination = False
 	if to_key.lower() in team_comms_dict.keys():
-		if 'alien' in team_comms_dict[to_key.lower()].topic.lower(): # destination is alien -comm
-			alien_destination = True
-			if to_key in open_alien:
-				alien_destination_allowed = True
+		#print(":", team_comms_dict[to_key.lower()].topic, ":")
+		#if type(team_comms_dict[to_key.lower()].topic) is not NoneType:
+		if team_comms_dict[to_key.lower()].topic != None:
+			#print('not NoneType')
+			if 'alien' in team_comms_dict[to_key.lower()].topic.lower(): # destination is alien -comm
+				alien_destination = True
+				if to_key in open_alien:
+					alien_destination_allowed = True
 
 	if testing:
 		if disable_msg:
@@ -455,14 +468,21 @@ async def msg(ctx, *, input_message: str):
 		await client.say(not_valid_msg_format)
 		return
 	# trying to send to invalid team
-	#if to_key.lower() not in open_alien: # HOW DO WE SOLVE THIS?
 	if to_key.lower() not in team_comms_list:
 		not_team_error_msg = '"' + to_original + '"' + ' not a valid team. Try again.'
 		await client.say(not_team_error_msg)
 		return
-	if to_key.lower() not in team_comms_list:
-		not_team_error_msg = '"' + to_original + '"' + ' not a valid team. Try again.'
-		await client.say(not_team_error_msg)
+	# Not correct permissions
+	correct_permission = False
+	for permission in permissions:
+		if permission in [role.name.lower() for role in user.roles]:
+			correct_permission = True
+			break
+	if not correct_permission:
+		incorrect_permission_msg = 'Only team leaders (@Head of State, @Lead Editor, '
+		incorrect_permission_msg += '@Secretary-General of the United Nations) or those with a '
+		incorrect_permission_msg += '@Diplomat tag can use this command.'
+		await client.say(inccorect_permissions_msg)
 		return
 	if to_key.lower() == fro_key.lower(): # trying to send a message to oneself
 		same_team_error_msg = 'Use "' + command_prefix + 'echo" instead to send a message to the'
