@@ -47,7 +47,7 @@ server_name = "Watch The Skies"
 
 # Phase stuff
 current_phase_i = 0
-game_phases = [	'Pre-Pre-Game',
+game_phases = [	'Transition Phase',
 				'Pre-Game Briefing',
 				'Spring 2020 - Initial Preparation',
 				'Spring 2020 - Operations Phase (15 minutes)',
@@ -176,10 +176,11 @@ bot_description = "Sky Watcher Bot for Watch The Skies"
 client = Bot(description=bot_description, command_prefix=command_prefix, pm_help = True)
 
 # Dev stuff
-testing = False
+testing = True
 disable_msg = True
 disable_pr = False
-dev_discord_name = 'Giancarlo-China-Chief of Staff'.lower()
+#dev_discord_name = 'Giancarlo-China-Chief of Staff'.lower()
+dev_discord_name = 'pandiculate'.lower()
 
 # Roles
 timekeeper_role = 'game control'
@@ -1509,9 +1510,56 @@ async def alien_comms(ctx, *, input_message: str):
 	in the list removes them from it
 	"""
 
-	""" FIX THIS """
+	# Get the user info
+	user = ctx.message.author
 
-	return
+	# Take out '-comms' from input_message if it exists
+	message = input_message
+	if '-comms' in message:
+		message = message[:-6]
+
+	# Permissions for roles that can use this command
+	permissions = [
+		'game control',
+		'alien control'
+	]
+
+	# Error checking
+	# Check to see if the person using this command has the correct permissions
+	correct_permission = False
+	for permission in permissions:
+		if permission in [role.name.lower() for role in user.roles]:
+			correct_permission = True
+			break
+	if not correct_permission:
+		if testing:
+			if user.name.lower() != dev_discord_name:
+				not_correct_permission_msg = "Only a person with a @Game Control or "
+				not_correct_permission_msg += "@Alien Control tag can use this command."
+				await client.say(not_correct_permission_msg)
+		else:
+			not_correct_permission_msg = "Only a person with a @Game Control or "
+			not_correct_permission_msg += "@Alien Control tag can use this command."
+			await client.say(not_correct_permission_msg)
+
+	# Add or remove the team from the list
+	change = update_open_alien(message)
+
+	# Log for the controllers
+	print('The aliens with /msg permissions have changed: {}'.format(open_alien))
+
+	# Let the user know what happened
+	if change > 0:
+		send_msg = 'The {} alien group have been GIVEN `/msg` permissions. '.format(message)
+		send_msg += 'All alien groups with these permissions: {}'.format(open_alien)
+	elif change < 0:
+		send_msg = 'The {} alien group have been REMOVED of `/msg` permissions. '.format(message)
+		send_msg += 'All alien groups with these permissions: {}'.format(open_alien)
+	else:
+		send_msg = 'No change to the aliens with `/msg` permissions. '.format(message)
+		send_msg += 'All alien groups with these permissions: {}'.format(open_alien)
+	await client.say(send_msg)
+
 
 # Command to manually refresh the team comms list/dict
 @client.command()
@@ -1959,6 +2007,7 @@ async def list_phase(ctx):
 	if control_role not in [role.name.lower() for role in user.roles]:
 		if testing:
 			if user.name.lower() != dev_discord_name:
+				print(user.name)
 				not_gamecontrol_error = 'Only a @Game Control can use this command.'
 				await client.say(not_gamecontrol_error)
 				return
@@ -1973,14 +2022,19 @@ async def list_phase(ctx):
 	# Build the phase list output
 	send_msg = "```"
 	for i, phase in enumerate(game_phases):
+		phase_s = phase
+		if ' minutes)' in phase_s:
+			phase_s = phase_s[:-13]
 		if current_phase_i == i:
-			phase_str = '{} - {} <---- we are here\n'.format(i, phase)
+			phase_str = '{} - {} <---- we are here\n'.format(i, phase_s)
 		else:
-			phase_str = '{} - {}\n'.format(i, phase)
+			phase_str = '{} - {}\n'.format(i, phase_s)
 		send_msg += phase_str
 	send_msg += "```"
+	#print(len(send_msg))
 
 	# Send the message to the channel the command was used in
+	#await client.say('test')
 	await client.say(send_msg)
 
 
@@ -2219,9 +2273,15 @@ def update_open_alien(new_open_alien):
 
 	start_size = len(open_alien)
 
-	#if new_open_alien.lower() in 
+	if new_open_alien.lower() in open_alien:
+		open_alien = [s for s in open_alien if s != new_open_alien.lower()]
+	else:
+		open_alien.append(new_open_alien.lower())
+	
+	end_size = len(open_alien)
 
-	return
+	# should return -1 if an alien group was removed, and 1 if the alien group was added
+	return end_size - start_size
 	
 	
 ###################################################################################################
