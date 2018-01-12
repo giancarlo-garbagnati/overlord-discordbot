@@ -233,6 +233,9 @@ async def on_ready():
 
 	print("##############################")
 
+	#print(public_dict)
+	print(team_disc_dict)
+
 	"""
 	for key, channel in all_dict.items():
 		print('key:', key)
@@ -1217,8 +1220,9 @@ async def blast(ctx, *, input_message: str):
 		for key, value in dev_dict.items():
 			await client.send_message(value, send_msg)
 	else: # otherwise everyone gets the message
-		for key, value in all_dict.items():
+		for key, value in team_disc_dict.items():
 			await client.send_message(value, send_msg)
+		await client.send_message(public_dict['global-chat'], send_msg)
 	#await client.send_message(public_dict['press-releases'], send_msg)
 
 	# Logging message for game controllers
@@ -1280,13 +1284,16 @@ async def psa(ctx, *, input_message: str):
 		for key, value in dev_dict.items():
 			await client.send_message(value, send_msg)
 	else: # otherwise everyone gets the message
+		for key, value in team_disc_dict.items():
+			await client.send_message(value, send_msg)
+		await client.send_message(public_dict['global-chat'], send_msg)
 		#print(len(all_dict.keys()))
 		#i = 0
-		for key, value in all_dict.items():
+		#for key, value in all_dict.items():
 			#print(key, value)
 			#await client.send_message(dev_dict['dev-spam'], str(i))
 			#i += 1
-			await client.send_message(value, send_msg)
+			#await client.send_message(value, send_msg)
 		#return
 	#await client.send_message(public_dict['press-releases'], send_msg)
 
@@ -1719,8 +1726,9 @@ async def next_phase(ctx):
 				await client.send_message(value, send_msg)
 			#await client.send_message(value, send_msg)
 	else: # otherwise everyone gets the message
-		for key, value in all_dict.items():
+		for key, value in team_disc_dict.items():
 			await client.send_message(value, send_msg)
+		await client.send_message(public_dict['global-chat'], send_msg)
 	#await client.send_message(public_dict['press-releases'], send_msg)
 
 	# Logging message for game controllers
@@ -1787,8 +1795,9 @@ async def set_phase(ctx, x: int):
 				await client.send_message(value, send_msg)
 			#await client.send_message(value, send_msg)
 	else: # otherwise everyone gets the message
-		for key, value in all_dict.items():
+		for key, value in team_disc_dict.items():
 			await client.send_message(value, send_msg)
+		await client.send_message(public_dict['global-chat'], send_msg)
 	#await client.send_message(public_dict['press-releases'], send_msg)
 
 	# Logging message for game controllers
@@ -1852,8 +1861,9 @@ async def prev_phase(ctx):
 				await client.send_message(value, send_msg)
 			#await client.send_message(value, send_msg)
 	else: # otherwise everyone gets the message
-		for key, value in all_dict.items():
+		for key, value in team_disc_dict.items():
 			await client.send_message(value, send_msg)
+		await client.send_message(public_dict['global-chat'], send_msg)
 	#await client.send_message(public_dict['press-releases'], send_msg)
 
 	# Logging message for game controllers
@@ -1921,8 +1931,9 @@ async def last_phase(ctx):
 				await client.send_message(value, send_msg)
 			#await client.send_message(value, send_msg)
 	else: # otherwise everyone gets the message
-		for key, value in all_dict.items():
+		for key, value in team_disc_dict.items():
 			await client.send_message(value, send_msg)
+		await client.send_message(public_dict['global-chat'], send_msg)
 	#await client.send_message(public_dict['press-releases'], send_msg)
 
 	# Logging message for game controllers
@@ -2022,8 +2033,9 @@ async def end_phase(ctx):
 				await client.send_message(value, send_msg)
 			#await client.send_message(value, send_msg)
 	else: # otherwise everyone gets the message
-		for key, value in all_dict.items():
+		for key, value in team_disc_dict.items():
 			await client.send_message(value, send_msg)
+		await client.send_message(public_dict['global-chat'], send_msg)
 	#await client.send_message(public_dict['press-releases'], send_msg)
 
 	# Logging message for game controllers
