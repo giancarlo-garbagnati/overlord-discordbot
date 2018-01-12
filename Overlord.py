@@ -259,33 +259,46 @@ async def on_member_join(member):
 # When a channel is created, we'll update team-comms if necessary
 @client.event
 async def on_channel_create(channel):
-	""" When a channel is created, we want to check if it has '-comms' in it's name. If so,
-	we update the team_comms_dict 
+	""" When a channel is created, we want to check if it has '-comms'/'-aar'/'-discussion' 
+	in it's name. If so, we update the team_comms_dict 
 	"""
 	#event.channel.send_message('Woah, check out this new channel!')
 	#await client.send_message(channel, 'Woah, check out this new channel!')
 
-	if '-comms' in channel.name.lower():
-		update_teams(reset=True)
-		print('New comms channel created and added to dict')
-		print(team_comms_dict)
+	channels_to_update = [
+		'-comms',
+		'-discussion',
+		'-aar'
+	]
+
+	for s in channels_to_update:
+		if s in channel.name.lower():
+			update_teams(reset=True)
+			print('New channel created and added to dicts')
+			break
 
 
 # When a channel's name is changed, we'll check if team-comms needs to be reset
 @client.event
 async def on_channel_update(before, after):
 	""" When a channel gets updates, we check to see if the name has been changed to (or from)
-	something with a '-comms' in it. If so, we update lists
+	something with a '-comms'/'-aar'/'-discussion' in it. If so, we update lists
 	"""
 	#await client.send_message(after, 'I sense a disturbance in the force...')
 
-	if ('-comms' in before.name.lower()) or ('-comms' in after.name.lower()):
-		#print(len(team_comms_dict.keys()))
-		update_teams(reset=True)
-		print('Teams comms channels have been updated.')
-		#print(len(team_comms_dict.keys()))
+	channels_to_update = [
+		'-comms',
+		'-discussion',
+		'-aar'
+	]
+
+	for s in channels_to_update:
+		if (s in before.name.lower()) or (s in after.name.lower()):
+			update_teams(reset=True)
+			print('Teams channels have been updated.')
+			
 	
-	#print(team_comms_dict)
+	
 
 
 
@@ -1495,6 +1508,9 @@ async def alien_comms(ctx, *, input_message: str):
 	for a group to use /msg openly like other earth groups. Using this while a group is already
 	in the list removes them from it
 	"""
+
+	""" FIX THIS """
+
 	return
 
 # Command to manually refresh the team comms list/dict
