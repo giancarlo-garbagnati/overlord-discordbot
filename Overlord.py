@@ -179,7 +179,9 @@ client = Bot(description=bot_description, command_prefix=command_prefix, pm_help
 testing = True
 disable_msg = True
 disable_pr = False
+dev_discord_name = 'Giancarlo-China-Chief of Staff'.lower()
 
+# Roles
 timekeeper_role = 'game control'
 
 # Greeting message for when a new user joins the server
@@ -209,7 +211,7 @@ async def on_ready():
 		  format(client.user.id))
 	print('--------')
 	
-	update_teams(verbose=False)
+	update_teams(verbose=False, reset=False)
 	print("Team channel list and dictionary initialized.")
 	#print(team_comms_dict)
 	print('--------')
@@ -249,6 +251,38 @@ async def on_member_join(member):
 	server = member.server
 	await client.send_message(public_dict['role-assignment'], greeting_msg.format(member))
 	print("Member {} joined the server.".format(member))
+
+
+# When a channel is created, we'll update team-comms if necessary
+@client.event
+async def on_channel_create(channel):
+	""" When a channel is created, we want to check if it has '-comms' in it's name. If so,
+	we update the team_comms_dict 
+	"""
+	#event.channel.send_message('Woah, check out this new channel!')
+	#await client.send_message(channel, 'Woah, check out this new channel!')
+
+	if '-comms' in channel.name.lower():
+		update_teams(reset=True)
+		print('New comms channel created and added to dict')
+		print(team_comms_dict)
+
+
+# When a channel's name is changed, we'll check if team-comms needs to be reset
+@client.event
+async def on_channel_update(before, after):
+	""" When a channel gets updates, we check to see if the name has been changed to (or from)
+	something with a '-comms' in it. If so, we update lists
+	"""
+	#await client.send_message(after, 'I sense a disturbance in the force...')
+
+	if ('-comms' in before.name.lower()) or ('-comms' in after.name.lower()):
+		#print(len(team_comms_dict.keys()))
+		update_teams(reset=True)
+		print('Teams comms channels have been updated.')
+		#print(len(team_comms_dict.keys()))
+	
+	#print(team_comms_dict)
 
 
 
@@ -453,7 +487,7 @@ async def press_release(ctx, *, input_message: str):
 			else:
 				not_headofstate = False
 	if not_headofstate:
-		not_headofstate_error = 'Only Heads-of-State, UN Secretary Generals, or Lead Editos can '
+		not_headofstate_error = 'Only Heads-of-State, UN Secretary General, or Lead Editors can '
 		not_headofstate_error += 'use this command in their respective -comms channel. All others '
 		not_headofstate_error += 'must go through news or with a Press conference.'
 		await client.say(not_headofstate_error)
@@ -629,7 +663,8 @@ async def agent(ctx, *, input_message: str):
 
 # These commands are for players to communicate with the various control teams. They use
 # /[CONTROL TEAM NAME] [MESSAGE] to contact the team and the message gets conveyed over to that
-# team.
+# team. Only team leaders (Heads of State, UN Secretary General, Lead Editor), @diplomats, and 
+# aliens
 
 @client.command(pass_context=True)
 async def game(ctx, *, input_message: str):
@@ -644,20 +679,13 @@ async def game(ctx, *, input_message: str):
 	destination = control_dict[control_team.lower()]
 
 	# Error Checking
-	all_good, error_msg = ttc_error_check(sender_i, sender_key)
+	all_good, error_msg = ttc_error_check(user, sender_i, sender_key)
 	if not all_good:
 		await client.say(error_msg)
 		return
 
-	# Get sender channel
-	sender_channel = team_comms_dict[sender_key]
-
-	# Let's build the output text sent to the control channel
-	ttc_msg = '{} from {}{} '.format(user.mention, sender_emoji, sender)
-	ttc_msg += '({}) has a message for {} Control:\n'.format(sender_channel.mention, control_team)
-	ttc_msg += '--------------------------------------------------\n'
-	ttc_msg += '{}\n'.format(input_message)
-	ttc_msg += '--------------------------------------------------\n'
+	# Let's get the output
+	ttc_msg = ttc_return_msg(user, sender, sender_key, sender_emoji, control_team)
 
 	# Send the message to its destination
 	if testing:
@@ -685,20 +713,13 @@ async def npc(ctx, *, input_message: str):
 	destination = control_dict[control_team.lower()]
 
 	# Error Checking
-	all_good, error_msg = ttc_error_check(sender_i, sender_key)
+	all_good, error_msg = ttc_error_check(user, sender_i, sender_key)
 	if not all_good:
 		await client.say(error_msg)
 		return
 
-	# Get sender channel
-	sender_channel = team_comms_dict[sender_key]
-
-	# Let's build the output text sent to the control channel
-	ttc_msg = '{} from {}{} '.format(user.mention, sender_emoji, sender)
-	ttc_msg += '({}) has a message for {} Control:\n'.format(sender_channel.mention, control_team)
-	ttc_msg += '--------------------------------------------------\n'
-	ttc_msg += '{}\n'.format(input_message)
-	ttc_msg += '--------------------------------------------------\n'
+	# Let's get the output
+	ttc_msg = ttc_return_msg(user, sender, sender_key, sender_emoji, control_team)
 
 	# Send the message to its destination
 	if testing:
@@ -726,26 +747,13 @@ async def covert(ctx, *, input_message: str):
 	destination = control_dict[control_team.lower()]
 
 	# Error Checking
-	all_good, error_msg = ttc_error_check(sender_i, sender_key)
+	all_good, error_msg = ttc_error_check(user, sender_i, sender_key)
 	if not all_good:
 		await client.say(error_msg)
 		return
 
-	# Get sender channel
-	sender_channel = team_comms_dict[sender_key]
-
-	# Let's build the output text sent to the control channel
-	ttc_msg = '{} from {}{} '.format(user.mention, sender_emoji, sender)
-	ttc_msg += '({}) has a message for {} Control:\n'.format(sender_channel.mention, control_team)
-	ttc_msg += '--------------------------------------------------\n'
-	ttc_msg += '{}\n'.format(input_message)
-	ttc_msg += '--------------------------------------------------\n'
-
-	# Send the message to its destination
-	if testing:
-		await client.send_message(dev_dict['dev-spam'], ttc_msg)
-	else:
-		await client.send_message(destination, ttc_msg)
+	# Let's get the output
+	ttc_msg = ttc_return_msg(user, sender, sender_key, sender_emoji, control_team)
 
 	# Logging message for game controllers
 	print(ttc_msg)
@@ -767,20 +775,13 @@ async def national(ctx, *, input_message: str):
 	destination = control_dict[control_team.lower()]
 
 	# Error Checking
-	all_good, error_msg = ttc_error_check(sender_i, sender_key)
+	all_good, error_msg = ttc_error_check(user, sender_i, sender_key)
 	if not all_good:
 		await client.say(error_msg)
 		return
 
-	# Get sender channel
-	sender_channel = team_comms_dict[sender_key]
-
-	# Let's build the output text sent to the control channel
-	ttc_msg = '{} from {}{} '.format(user.mention, sender_emoji, sender)
-	ttc_msg += '({}) has a message for {} Control:\n'.format(sender_channel.mention, control_team)
-	ttc_msg += '--------------------------------------------------\n'
-	ttc_msg += '{}\n'.format(input_message)
-	ttc_msg += '--------------------------------------------------\n'
+	# Let's get the output
+	ttc_msg = ttc_return_msg(user, sender, sender_key, sender_emoji, control_team)
 
 	# Send the message to its destination
 	if testing:
@@ -808,20 +809,13 @@ async def globe(ctx, *, input_message: str):
 	destination = control_dict[control_team.lower()]
 
 	# Error Checking
-	all_good, error_msg = ttc_error_check(sender_i, sender_key)
+	all_good, error_msg = ttc_error_check(user, sender_i, sender_key)
 	if not all_good:
 		await client.say(error_msg)
 		return
 
-	# Get sender channel
-	sender_channel = team_comms_dict[sender_key]
-
-	# Let's build the output text sent to the control channel
-	ttc_msg = '{} from {}{} '.format(user.mention, sender_emoji, sender)
-	ttc_msg += '({}) has a message for {} Control:\n'.format(sender_channel.mention, control_team)
-	ttc_msg += '--------------------------------------------------\n'
-	ttc_msg += '{}\n'.format(input_message)
-	ttc_msg += '--------------------------------------------------\n'
+	# Let's get the output
+	ttc_msg = ttc_return_msg(user, sender, sender_key, sender_emoji, control_team)
 
 	# Send the message to its destination
 	if testing:
@@ -849,20 +843,13 @@ async def un(ctx, *, input_message: str):
 	destination = control_dict[control_team.lower()]
 
 	# Error Checking
-	all_good, error_msg = ttc_error_check(sender_i, sender_key)
+	all_good, error_msg = ttc_error_check(user, sender_i, sender_key)
 	if not all_good:
 		await client.say(error_msg)
 		return
 
-	# Get sender channel
-	sender_channel = team_comms_dict[sender_key]
-
-	# Let's build the output text sent to the control channel
-	ttc_msg = '{} from {}{} '.format(user.mention, sender_emoji, sender)
-	ttc_msg += '({}) has a message for {} Control:\n'.format(sender_channel.mention, control_team)
-	ttc_msg += '--------------------------------------------------\n'
-	ttc_msg += '{}\n'.format(input_message)
-	ttc_msg += '--------------------------------------------------\n'
+	# Let's get the output
+	ttc_msg = ttc_return_msg(user, sender, sender_key, sender_emoji, control_team)
 
 	# Send the message to its destination
 	if testing:
@@ -890,20 +877,13 @@ async def science(ctx, *, input_message: str):
 	destination = control_dict[control_team.lower()]
 
 	# Error Checking
-	all_good, error_msg = ttc_error_check(sender_i, sender_key)
+	all_good, error_msg = ttc_error_check(user, sender_i, sender_key)
 	if not all_good:
 		await client.say(error_msg)
 		return
 
-	# Get sender channel
-	sender_channel = team_comms_dict[sender_key]
-
-	# Let's build the output text sent to the control channel
-	ttc_msg = '{} from {}{} '.format(user.mention, sender_emoji, sender)
-	ttc_msg += '({}) has a message for {} Control:\n'.format(sender_channel.mention, control_team)
-	ttc_msg += '--------------------------------------------------\n'
-	ttc_msg += '{}\n'.format(input_message)
-	ttc_msg += '--------------------------------------------------\n'
+	# Let's get the output
+	ttc_msg = ttc_return_msg(user, sender, sender_key, sender_emoji, control_team)
 
 	# Send the message to its destination
 	if testing:
@@ -931,20 +911,13 @@ async def media(ctx, *, input_message: str):
 	destination = control_dict[control_team.lower()]
 
 	# Error Checking
-	all_good, error_msg = ttc_error_check(sender_i, sender_key)
+	all_good, error_msg = ttc_error_check(user, sender_i, sender_key)
 	if not all_good:
 		await client.say(error_msg)
 		return
 
-	# Get sender channel
-	sender_channel = team_comms_dict[sender_key]
-
-	# Let's build the output text sent to the control channel
-	ttc_msg = '{} from {}{} '.format(user.mention, sender_emoji, sender)
-	ttc_msg += '({}) has a message for {} Control:\n'.format(sender_channel.mention, control_team)
-	ttc_msg += '--------------------------------------------------\n'
-	ttc_msg += '{}\n'.format(input_message)
-	ttc_msg += '--------------------------------------------------\n'
+	# Let's get the output
+	ttc_msg = ttc_return_msg(user, sender, sender_key, sender_emoji, control_team)
 
 	# Send the message to its destination
 	if testing:
@@ -972,20 +945,13 @@ async def alien(ctx, *, input_message: str):
 	destination = control_dict[control_team.lower()]
 
 	# Error Checking
-	all_good, error_msg = ttc_error_check(sender_i, sender_key)
+	all_good, error_msg = ttc_error_check(user, sender_i, sender_key)
 	if not all_good:
 		await client.say(error_msg)
 		return
 
-	# Get sender channel
-	sender_channel = team_comms_dict[sender_key]
-
-	# Let's build the output text sent to the control channel
-	ttc_msg = '{} from {}{} '.format(user.mention, sender_emoji, sender)
-	ttc_msg += '({}) has a message for {} Control:\n'.format(sender_channel.mention, control_team)
-	ttc_msg += '--------------------------------------------------\n'
-	ttc_msg += '{}\n'.format(input_message)
-	ttc_msg += '--------------------------------------------------\n'
+	# Let's get the output
+	ttc_msg = ttc_return_msg(user, sender, sender_key, sender_emoji, control_team)
 
 	# Send the message to its destination
 	if testing:
@@ -1024,18 +990,43 @@ def ttc_get_sender_info(ctx):
 	return user, sender_i, sender, sender_key, sender_emoji
 
 # Helper fxn for ttc commands to error check and return the message string
-def ttc_error_check(sender_i, sender_key):
+def ttc_error_check(user, sender_i, sender_key):
 	""" Helper function for the ttc commands to error check.
 	Returns True if everything is good (and a blank error message), otherwise returns False
 	and returns an error message
 	"""
+	
+	# List of roles with permission to use these commands
+	permissions = [
+		'head of state',
+		'secretary-general of the united nations',
+		'lead editor',
+		'diplomat',
+		'extraterrestrial organism'
+	]
 
 	# Error Checking
 	if (sender_i < 1) or (sender_key.lower() not in team_comms_list): # not in correct channel
-		invalid_channel_error_msg = 'You cannot use this command in this channel.'
-		invalid_channel_error_msg += ' Use this in your "-comms" channel.'
-		#await client.say(invalid_channel_error_msg)
-		return False, invalid_channel_error_msg
+		# aliens can use this command in any channel
+		if 'extraterrestrial organism' not in [role.name.lower() for role in user.roles]:
+			invalid_channel_error_msg = 'You cannot use this command in this channel.'
+			invalid_channel_error_msg += ' Use this in your "-comms" channel.'
+			#await client.say(invalid_channel_error_msg)
+			return False, invalid_channel_error_msg
+	# Check if the user has the correct permission
+	correct_permission = False
+	for permission in permissions:
+		if permission.lower() in [role.name.lower() for role in user.roles]:
+			correct_permission = True
+			break
+	if not correct_permission:
+		if (not testing) and (user.name.lower() != dev_discord_name):
+			print(user.name.lower())
+			not_headofstate_error = 'You do not have permissions to use this command. This '
+			not_headofstate_error += 'command must be used by one with a team leader tag (ie '
+			not_headofstate_error += '@Head of State, @Secretary General of the United Nations, '
+			not_headofstate_error += 'or @Lead Editor) or someone with a @Diplomat tag.'
+			return False, not_headofstate_error
 
 	return True, ''
 
@@ -1117,7 +1108,7 @@ async def blast(ctx, *, input_message: str):
 	# Check if the user is has a @announcer role tag
 	if blast_role not in [role.name.lower() for role in user.roles]:
 		if testing:
-			if user.name.lower() != 'pandiculate':
+			if user.name.lower() != dev_discord_name:
 				not_announcer_error = 'Only an @Announcer can use this command.'
 				await client.say(not_announcer_error)
 				return
@@ -1173,12 +1164,12 @@ async def psa(ctx, *, input_message: str):
 	# Check if the user is has a @announcer role tag
 	if blast_role not in [role.name.lower() for role in user.roles]:
 		if testing:
-			if user.name.lower() != 'pandiculate':
+			if user.name.lower() != dev_discord_name:
 				not_announcer_error = 'Only an @announcer can use this command.'
 				await client.say(not_announcer_error)
 				return
 		else:
-			if user.name.lower() != 'pandiculate':
+			if user.name.lower() != dev_discord_name:
 				not_announcer_error = 'Only an @announcer can use this command.'
 				await client.say(not_announcer_error)
 				return
@@ -1251,7 +1242,7 @@ async def an(ctx, *, input_message: str):
 	# Check if the user is has a @announcer role tag
 	if an_role not in [role.name.lower() for role in user.roles]:
 		if testing:
-			if user.name.lower() != 'pandiculate':
+			if user.name.lower() != dev_discord_name:
 				not_announcer_error = 'Only an @Announcer can use this command.'
 				await client.say(not_announcer_error)
 				return
@@ -1367,7 +1358,7 @@ async def fakemsg(ctx, *, input_message: str):
 			correct_role = True
 	if not correct_role:
 		if testing:
-			if user.name.lower() != 'pandiculate':
+			if user.name.lower() != dev_discord_name:
 				incorrect_role_error = 'You do not have permission to use this command.'
 				await client.say(incorrect_role_error)
 				return
@@ -1446,7 +1437,7 @@ async def fakepress_release(ctx, *, input_message: str):
 			correct_role = True
 	if not correct_role:
 		if testing:
-			if user.name.lower() != 'pandiculate':
+			if user.name.lower() != dev_discord_name:
 				incorrect_role_error = 'You do not have permission to use this command.'
 				await client.say(incorrect_role_error)
 				return
@@ -1501,7 +1492,7 @@ async def update_team_comms(*args):
 	Usable by anyone
 	"""
 
-	update_teams()
+	update_teams(reset=True)
 	print('Team comms updated.')
 
 
@@ -1536,7 +1527,7 @@ async def next_phase(ctx):
 	# Check if the user is has a @Game Control role tag
 	if control_role not in [role.name.lower() for role in user.roles]:
 		if testing:
-			if user.name.lower() != 'pandiculate':
+			if user.name.lower() != dev_discord_name:
 				not_gamecontrol_error = 'Only a @Game Control can use this command.'
 				await client.say(not_gamecontrol_error)
 				return
@@ -1608,7 +1599,7 @@ async def set_phase(ctx, x: int):
 	# Check if the user is has a @Game Control role tag
 	if control_role not in [role.name.lower() for role in user.roles]:
 		if testing:
-			if user.name.lower() != 'pandiculate':
+			if user.name.lower() != dev_discord_name:
 				not_gamecontrol_error = 'Only a @Game Control can use this command.'
 				await client.say(not_gamecontrol_error)
 				return
@@ -1672,7 +1663,7 @@ async def prev_phase(ctx):
 	# Check if the user is has a @Game Control role tag
 	if control_role not in [role.name.lower() for role in user.roles]:
 		if testing:
-			if user.name.lower() != 'pandiculate':
+			if user.name.lower() != dev_discord_name:
 				not_gamecontrol_error = 'Only a @Game Control can use this command.'
 				await client.say(not_gamecontrol_error)
 				return
@@ -1741,7 +1732,7 @@ async def last_phase(ctx):
 	# Check if the user is has a @Game Control role tag
 	if control_role not in [role.name.lower() for role in user.roles]:
 		if testing:
-			if user.name.lower() != 'pandiculate':
+			if user.name.lower() != dev_discord_name:
 				not_gamecontrol_error = 'Only a @Game Control can use this command.'
 				await client.say(not_gamecontrol_error)
 				return
@@ -1808,7 +1799,7 @@ async def reset_phase(ctx):
 	# Check if the user is has a @Game Control role tag
 	if control_role not in [role.name.lower() for role in user.roles]:
 		if testing:
-			if user.name.lower() != 'pandiculate':
+			if user.name.lower() != dev_discord_name:
 				not_gamecontrol_error = 'Only a @Game Control can use this command.'
 				await client.say(not_gamecontrol_error)
 				return
@@ -1850,7 +1841,7 @@ async def end_phase(ctx):
 	# Check if the user is has a @Game Control role tag
 	if control_role not in [role.name.lower() for role in user.roles]:
 		if testing:
-			if user.name.lower() != 'pandiculate':
+			if user.name.lower() != dev_discord_name:
 				not_gamecontrol_error = 'Only a @Game Control can use this command.'
 				await client.say(not_gamecontrol_error)
 				return
@@ -1905,7 +1896,7 @@ async def what_phase(ctx):
 	# Check if the user is has a @Game Control role tag
 	if control_role not in [role.name.lower() for role in user.roles]:
 		if testing:
-			if user.name.lower() != 'pandiculate':
+			if user.name.lower() != dev_discord_name:
 				not_gamecontrol_error = 'Only a @Game Control can use this command.'
 				await client.say(not_gamecontrol_error)
 				return
@@ -1939,7 +1930,7 @@ async def list_phase(ctx):
 	# Check if the user is has a @Game Control role tag
 	if control_role not in [role.name.lower() for role in user.roles]:
 		if testing:
-			if user.name.lower() != 'pandiculate':
+			if user.name.lower() != dev_discord_name:
 				not_gamecontrol_error = 'Only a @Game Control can use this command.'
 				await client.say(not_gamecontrol_error)
 				return
@@ -2036,13 +2027,19 @@ def name_disambig(team_name):
 	return name, key
 
 
-def update_teams(verbose=False):
+def update_teams(verbose=False, reset=True):
 	""" Helper function to update the team lists and dicts. Called during initialization and 
 	potentially elsewhere.
 	"""
 	# We'll get a list of all servers, then we'll look for the desired server ('server_name', 
 	# above), then we'll create a dictionary of channels (if the name matches any in the 
 	# 'human_team_list' list above)
+
+	# Let's reset all the team dicts (if requested)
+	if reset:
+		reset_dicts()
+
+	# Now let's sort
 	servers = client.servers
 	for server in servers:
 		#print(server.name)
@@ -2138,7 +2135,7 @@ def check_flag_emoji():
 		emoji_str += '{} {}\n'.format(value, key)
 
 	# Create a string of all items in the -comms list/dict that aren't in the flag dict
-	not_in_set = "These -comms channels don't have a respective emoji:\n"
+	not_in_set = "These -comms channels don't have an emoji:  \n"
 	for comm_key in team_comms_dict.keys():
 		if comm_key not in flag_emoji_dict.keys():
 			not_in_set += '{}, '.format(comm_key)
@@ -2158,6 +2155,31 @@ def get_emoji(key):
 		return flag_emoji_dict[key]
 	else:
 		return ''
+
+# Helper function to reset all team dicts. Only called by update_teams()
+def reset_dicts():
+	"""
+	"""
+	global team_comms_dict
+	team_comms_dict = dict()
+	global team_aar_dict
+	team_aar_dict = dict()
+	global team_disc_dict
+	team_disc_dict = dict()
+	global control_dict
+	control_dict = dict()
+	global category_dict
+	category_dict = dict()
+	global voice_dict
+	voice_dict = dict()
+	global dev_dict
+	dev_dict = dict()
+	global all_dict
+	all_dict = dict()
+	global public_dict
+	public_dict = dict()
+	global other_dict
+	other_dict = dict()
 
 	
 ###################################################################################################
