@@ -176,13 +176,16 @@ bot_description = "Sky Watcher Bot for Watch The Skies"
 client = Bot(description=bot_description, command_prefix=command_prefix, pm_help = True)
 
 # Dev stuff
-testing = True
+testing = False
 disable_msg = True
 disable_pr = False
 dev_discord_name = 'Giancarlo-China-Chief of Staff'.lower()
 
 # Roles
 timekeeper_role = 'game control'
+
+# Open aliens comms group
+open_alien = []
 
 # Greeting message for when a new user joins the server
 greeting_msg = """Hi {0.mention}! Welcome to the game server for Watch the Skies - Sacramento! """
@@ -671,8 +674,8 @@ async def game(ctx, *, input_message: str):
 	""" A command for communicating with the game control team (#game-control)
 	"""
 
-	# Call get_sender_info() to get all the info
-	user, sender_i, sender, sender_key, sender_emoji = get_sender_info(ctx)
+	# Call ttc_get_sender_info() to get all the info
+	user, sender_i, sender, sender_key, sender_emoji = ttc_get_sender_info(ctx)
 
 	# Get the destination channel
 	control_team = 'Game'
@@ -685,7 +688,7 @@ async def game(ctx, *, input_message: str):
 		return
 
 	# Let's get the output
-	ttc_msg = ttc_return_msg(user, sender, sender_key, sender_emoji, control_team)
+	ttc_msg = ttc_return_msg(user, sender, sender_key, sender_emoji, control_team, input_message)
 
 	# Send the message to its destination
 	if testing:
@@ -697,7 +700,7 @@ async def game(ctx, *, input_message: str):
 	print(ttc_msg)
 
 	# Confirmation message
-	confirmation_msg = 'Your message has been sent to {} Control.'
+	confirmation_msg = 'Your message has been sent to {} Control.'.format(control_team)
 	await client.say(confirmation_msg)
 
 @client.command(pass_context=True)
@@ -705,8 +708,8 @@ async def npc(ctx, *, input_message: str):
 	""" A command for communicating with the npc control team (#npc-control)
 	"""
 
-	# Call get_sender_info() to get all the info
-	user, sender_i, sender, sender_key, sender_emoji = get_sender_info(ctx)
+	# Call ttc_get_sender_info() to get all the info
+	user, sender_i, sender, sender_key, sender_emoji = ttc_get_sender_info(ctx)
 
 	# Get the destination channel
 	control_team = 'NPC'
@@ -719,7 +722,7 @@ async def npc(ctx, *, input_message: str):
 		return
 
 	# Let's get the output
-	ttc_msg = ttc_return_msg(user, sender, sender_key, sender_emoji, control_team)
+	ttc_msg = ttc_return_msg(user, sender, sender_key, sender_emoji, control_team, input_message)
 
 	# Send the message to its destination
 	if testing:
@@ -731,7 +734,7 @@ async def npc(ctx, *, input_message: str):
 	print(ttc_msg)
 
 	# Confirmation message
-	confirmation_msg = 'Your message has been sent to {} Control.'
+	confirmation_msg = 'Your message has been sent to {} Control.'.format(control_team)
 	await client.say(confirmation_msg)
 
 @client.command(pass_context=True)
@@ -739,8 +742,8 @@ async def covert(ctx, *, input_message: str):
 	""" A command for communicating with the covert control team (#covert-control)
 	"""
 
-	# Call get_sender_info() to get all the info
-	user, sender_i, sender, sender_key, sender_emoji = get_sender_info(ctx)
+	# Call ttc_get_sender_info() to get all the info
+	user, sender_i, sender, sender_key, sender_emoji = ttc_get_sender_info(ctx)
 
 	# Get the destination channel
 	control_team = 'Covert'
@@ -753,13 +756,13 @@ async def covert(ctx, *, input_message: str):
 		return
 
 	# Let's get the output
-	ttc_msg = ttc_return_msg(user, sender, sender_key, sender_emoji, control_team)
+	ttc_msg = ttc_return_msg(user, sender, sender_key, sender_emoji, control_team, input_message)
 
 	# Logging message for game controllers
 	print(ttc_msg)
 
 	# Confirmation message
-	confirmation_msg = 'Your message has been sent to {} Control.'
+	confirmation_msg = 'Your message has been sent to {} Control.'.format(control_team)
 	await client.say(confirmation_msg)
 
 @client.command(pass_context=True)
@@ -767,8 +770,8 @@ async def national(ctx, *, input_message: str):
 	""" A command for communicating with the national control team (#national-control)
 	"""
 
-	# Call get_sender_info() to get all the info
-	user, sender_i, sender, sender_key, sender_emoji = get_sender_info(ctx)
+	# Call ttc_get_sender_info() to get all the info
+	user, sender_i, sender, sender_key, sender_emoji = ttc_get_sender_info(ctx)
 
 	# Get the destination channel
 	control_team = 'National'
@@ -781,7 +784,7 @@ async def national(ctx, *, input_message: str):
 		return
 
 	# Let's get the output
-	ttc_msg = ttc_return_msg(user, sender, sender_key, sender_emoji, control_team)
+	ttc_msg = ttc_return_msg(user, sender, sender_key, sender_emoji, control_team, input_message)
 
 	# Send the message to its destination
 	if testing:
@@ -793,7 +796,7 @@ async def national(ctx, *, input_message: str):
 	print(ttc_msg)
 
 	# Confirmation message
-	confirmation_msg = 'Your message has been sent to {} Control.'
+	confirmation_msg = 'Your message has been sent to {} Control.'.format(control_team)
 	await client.say(confirmation_msg)
 
 @client.command(pass_context=True)
@@ -801,8 +804,8 @@ async def globe(ctx, *, input_message: str):
 	""" A command for communicating with the globe control team (#globe-control)
 	"""
 
-	# Call get_sender_info() to get all the info
-	user, sender_i, sender, sender_key, sender_emoji = get_sender_info(ctx)
+	# Call ttc_get_sender_info() to get all the info
+	user, sender_i, sender, sender_key, sender_emoji = ttc_get_sender_info(ctx)
 
 	# Get the destination channel
 	control_team = 'Globe'
@@ -815,7 +818,7 @@ async def globe(ctx, *, input_message: str):
 		return
 
 	# Let's get the output
-	ttc_msg = ttc_return_msg(user, sender, sender_key, sender_emoji, control_team)
+	ttc_msg = ttc_return_msg(user, sender, sender_key, sender_emoji, control_team, input_message)
 
 	# Send the message to its destination
 	if testing:
@@ -827,7 +830,7 @@ async def globe(ctx, *, input_message: str):
 	print(ttc_msg)
 
 	# Confirmation message
-	confirmation_msg = 'Your message has been sent to {} Control.'
+	confirmation_msg = 'Your message has been sent to {} Control.'.format(control_team)
 	await client.say(confirmation_msg)
 
 @client.command(pass_context=True)
@@ -835,8 +838,8 @@ async def un(ctx, *, input_message: str):
 	""" A command for communicating with the un control team (#un-control)
 	"""
 
-	# Call get_sender_info() to get all the info
-	user, sender_i, sender, sender_key, sender_emoji = get_sender_info(ctx)
+	# Call ttc_get_sender_info() to get all the info
+	user, sender_i, sender, sender_key, sender_emoji = ttc_get_sender_info(ctx)
 
 	# Get the destination channel
 	control_team = 'UN'
@@ -849,7 +852,7 @@ async def un(ctx, *, input_message: str):
 		return
 
 	# Let's get the output
-	ttc_msg = ttc_return_msg(user, sender, sender_key, sender_emoji, control_team)
+	ttc_msg = ttc_return_msg(user, sender, sender_key, sender_emoji, control_team, input_message)
 
 	# Send the message to its destination
 	if testing:
@@ -861,7 +864,7 @@ async def un(ctx, *, input_message: str):
 	print(ttc_msg)
 
 	# Confirmation message
-	confirmation_msg = 'Your message has been sent to {} Control.'
+	confirmation_msg = 'Your message has been sent to {} Control.'.format(control_team)
 	await client.say(confirmation_msg)
 
 @client.command(pass_context=True)
@@ -869,8 +872,8 @@ async def science(ctx, *, input_message: str):
 	""" A command for communicating with the science control team (#science-control)
 	"""
 
-	# Call get_sender_info() to get all the info
-	user, sender_i, sender, sender_key, sender_emoji = get_sender_info(ctx)
+	# Call ttc_get_sender_info() to get all the info
+	user, sender_i, sender, sender_key, sender_emoji = ttc_get_sender_info(ctx)
 
 	# Get the destination channel
 	control_team = 'Science'
@@ -883,7 +886,7 @@ async def science(ctx, *, input_message: str):
 		return
 
 	# Let's get the output
-	ttc_msg = ttc_return_msg(user, sender, sender_key, sender_emoji, control_team)
+	ttc_msg = ttc_return_msg(user, sender, sender_key, sender_emoji, control_team, input_message)
 
 	# Send the message to its destination
 	if testing:
@@ -895,7 +898,7 @@ async def science(ctx, *, input_message: str):
 	print(ttc_msg)
 
 	# Confirmation message
-	confirmation_msg = 'Your message has been sent to {} Control.'
+	confirmation_msg = 'Your message has been sent to {} Control.'.format(control_team)
 	await client.say(confirmation_msg)
 
 @client.command(pass_context=True)
@@ -903,8 +906,8 @@ async def media(ctx, *, input_message: str):
 	""" A command for communicating with the media control team (#media-control)
 	"""
 
-	# Call get_sender_info() to get all the info
-	user, sender_i, sender, sender_key, sender_emoji = get_sender_info(ctx)
+	# Call ttc_get_sender_info() to get all the info
+	user, sender_i, sender, sender_key, sender_emoji = ttc_get_sender_info(ctx)
 
 	# Get the destination channel
 	control_team = 'Media'
@@ -917,7 +920,7 @@ async def media(ctx, *, input_message: str):
 		return
 
 	# Let's get the output
-	ttc_msg = ttc_return_msg(user, sender, sender_key, sender_emoji, control_team)
+	ttc_msg = ttc_return_msg(user, sender, sender_key, sender_emoji, control_team, input_message)
 
 	# Send the message to its destination
 	if testing:
@@ -929,7 +932,7 @@ async def media(ctx, *, input_message: str):
 	print(ttc_msg)
 
 	# Confirmation message
-	confirmation_msg = 'Your message has been sent to {} Control.'
+	confirmation_msg = 'Your message has been sent to {} Control.'.format(control_team)
 	await client.say(confirmation_msg)
 
 @client.command(pass_context=True)
@@ -937,7 +940,7 @@ async def alien(ctx, *, input_message: str):
 	""" A command for communicating with the alien control team (#alien-control)
 	"""
 
-	# Call get_sender_info() to get all the info
+	# Call ttc_get_sender_info() to get all the info
 	user, sender_i, sender, sender_key, sender_emoji = ttc_get_sender_info(ctx)
 
 	# Get the destination channel
@@ -951,7 +954,7 @@ async def alien(ctx, *, input_message: str):
 		return
 
 	# Let's get the output
-	ttc_msg = ttc_return_msg(user, sender, sender_key, sender_emoji, control_team)
+	ttc_msg = ttc_return_msg(user, sender, sender_key, sender_emoji, control_team, input_message)
 
 	# Send the message to its destination
 	if testing:
@@ -963,7 +966,7 @@ async def alien(ctx, *, input_message: str):
 	print(ttc_msg)
 
 	# Confirmation message
-	confirmation_msg = 'Your message has been sent to {} Control.'
+	confirmation_msg = 'Your message has been sent to {} Control.'.format(control_team)
 	await client.say(confirmation_msg)
 
 
@@ -1032,7 +1035,7 @@ def ttc_error_check(user, sender_i, sender_key):
 
 # Helper function for ttc commands for returning a string of the message to send to the respective
 # control team
-def ttc_return_msg(user, sender, sender_key, sender_emoji, control_team):
+def ttc_return_msg(user, sender, sender_key, sender_emoji, control_team, input_message):
 	""" Helper function for building the message that will be received by the control team
 	"""
 
@@ -1484,6 +1487,15 @@ async def fakepress_release(ctx, *, input_message: str):
 	confirmation_message += '"{}"'.format(message)
 	await client.say(confirmation_message)
 
+
+# Command to open up an alien's -comms channel for open use of /msg
+@client.command(pass_context=True)
+async def alien_comms(ctx, *, input_message: str):
+	""" Function for control (@Game Control or @Alien Control) to open up the -comms channel
+	for a group to use /msg openly like other earth groups. Using this while a group is already
+	in the list removes them from it
+	"""
+	return
 
 # Command to manually refresh the team comms list/dict
 @client.command()
@@ -2181,6 +2193,20 @@ def reset_dicts():
 	global other_dict
 	other_dict = dict()
 
+
+# Helper function for adding or removing from the open_alien
+def update_open_alien(new_open_alien):
+	""" Helper function for either adding to or removing from the open_alien list.
+	Any alien team  
+	"""
+	global open_alien
+
+	start_size = len(open_alien)
+
+	#if new_open_alien.lower() in 
+
+	return
+	
 	
 ###################################################################################################
 # Other
