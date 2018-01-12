@@ -234,7 +234,7 @@ async def on_ready():
 	print("##############################")
 
 	#print(public_dict)
-	print(team_disc_dict)
+	#print(team_disc_dict)
 
 	"""
 	for key, channel in all_dict.items():
@@ -485,7 +485,7 @@ async def msg(ctx, *, input_message: str):
 		incorrect_permission_msg = 'Only team leaders (@Head of State, @Lead Editor, '
 		incorrect_permission_msg += '@Secretary-General of the United Nations) or those with a '
 		incorrect_permission_msg += '@Diplomat tag can use this command.'
-		await client.say(inccorect_permissions_msg)
+		await client.say(incorrect_permission_msg)
 		return
 	if to_key.lower() == fro_key.lower(): # trying to send a message to oneself
 		same_team_error_msg = 'Use "' + command_prefix + 'echo" instead to send a message to the'
