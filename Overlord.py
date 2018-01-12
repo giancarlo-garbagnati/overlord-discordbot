@@ -365,6 +365,9 @@ async def msg(ctx, *, input_message: str):
 	(spaces are fine to use in the [MESSAGE] portion of this command)
 	"""
 
+	# Get the user info
+	user = ctx.message.author
+
 	# Parse out the name of the destination country from the message
 	to_i = input_message.find(' ')
 	to_unfmt = input_message[0:to_i]
@@ -386,6 +389,15 @@ async def msg(ctx, *, input_message: str):
 	fro = fro_original[:fro_i]
 	fro, fro_key = name_disambig(fro)
 
+	# Check if it's coming from ETs
+	et_role = 'Extraterrestrial Organism'.lower()
+	alien_permissions = False
+	alien_sender = False
+	if et_role in [role.name.lower() for role in user.roles]:
+		alien_sender = True
+		if fro_key in open_alien:
+			alien_permissions = True
+
 	if testing:
 		if disable_msg:
 			if (fro_key.lower() not in ['dev','dev2']) or (to_key.lower() not in ['dev','dev2']):
@@ -403,7 +415,7 @@ async def msg(ctx, *, input_message: str):
 	# Error Checking
 	# Not in correct channel (or not from control)
 	if (fro_i < 1) or (fro_key.lower() not in team_comms_list):
-		if not from_control:
+		if (not from_control) and ():
 			#print(fro_i)
 			#print(fro.lower())
 			#print(team_comms_list)
@@ -411,12 +423,23 @@ async def msg(ctx, *, input_message: str):
 			invalid_channel_error_msg += ' Use this in your "-comms" channel.'
 			await client.say(invalid_channel_error_msg)
 			return
+	# if the sender is an alien and trying to send from a team without /msg permissions
+	if alien_sender and not alien_permissions:
+		no_permissions_yet_msg = 'You are not able to use this command.'
+		await client.say(no_permissions_yet_msg)
+		return
 	if to_i < 1: # missing a message
 		not_valid_msg_format = 'Not a valid message. The correct format for this command is: "'
 		not_valid_msg_format += command_prefix + 'msg [DESTINATION] [MESSAGE]".'
 		await client.say(not_valid_msg_format)
 		return
-	if to_key.lower() not in team_comms_list: # trying to send to invalid team
+	# trying to send to invalid team
+	#if to_key.lower() not in open_alien: # HOW DO WE SOLVE THIS?
+	if to_key.lower() not in team_comms_list:
+		not_team_error_msg = '"' + to_original + '"' + ' not a valid team. Try again.'
+		await client.say(not_team_error_msg)
+		return
+	if to_key.lower() not in team_comms_list:
 		not_team_error_msg = '"' + to_original + '"' + ' not a valid team. Try again.'
 		await client.say(not_team_error_msg)
 		return
@@ -2237,6 +2260,7 @@ def get_emoji(key):
 		return flag_emoji_dict[key]
 	else:
 		return ''
+
 
 # Helper function to reset all team dicts. Only called by update_teams()
 def reset_dicts():
