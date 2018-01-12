@@ -177,6 +177,7 @@ client = Bot(description=bot_description, command_prefix=command_prefix, pm_help
 
 # Dev stuff
 testing = True
+testing = False
 disable_msg = True
 disable_pr = False
 #dev_discord_name = 'Giancarlo-China-Chief of Staff'.lower()
@@ -293,6 +294,9 @@ async def on_channel_update(before, after):
 		'-aar'
 	]
 
+	#print('Topic', after.topic)
+	#print('type', type(after.topic))
+
 	for s in channels_to_update:
 		if (s in before.name.lower()) or (s in after.name.lower()):
 			update_teams(reset=True)
@@ -398,9 +402,19 @@ async def msg(ctx, *, input_message: str):
 		if fro_key in open_alien:
 			alien_permissions = True
 
+	# Check if it's going to an ET team without permissions
+	alien_destination_allowed = False
+	alien_destination = False
+	if to_key.lower() in team_comms_dict.keys():
+		if 'alien' in team_comms_dict[to_key.lower()].topic.lower(): # destination is alien -comm
+			alien_destination = True
+			if to_key in open_alien:
+				alien_destination_allowed = True
+
 	if testing:
 		if disable_msg:
 			if (fro_key.lower() not in ['dev','dev2']) or (to_key.lower() not in ['dev','dev2']):
+				#print("we're here")
 				return
 	
 	# Diagnostic messages
@@ -411,6 +425,8 @@ async def msg(ctx, *, input_message: str):
 	print("to_i: " + str(to_i))
 	print('Input message: ' + input_message)
 	"""
+
+	#print(to_key)
 
 	# Error Checking
 	# Not in correct channel (or not from control)
@@ -427,6 +443,11 @@ async def msg(ctx, *, input_message: str):
 	if alien_sender and not alien_permissions:
 		no_permissions_yet_msg = 'You are not able to use this command.'
 		await client.say(no_permissions_yet_msg)
+		return
+	# Trying to send to an alien team that doesn't have -comms enabled
+	if alien_destination and not alien_destination_allowed:
+		alien_destination_not_allowed_msg = '"{}" not a valid team. Try again.'.format(to_original)
+		await client.say(alien_destination_not_allowed_msg)
 		return
 	if to_i < 1: # missing a message
 		not_valid_msg_format = 'Not a valid message. The correct format for this command is: "'
@@ -572,6 +593,10 @@ async def agent(ctx, *, input_message: str):
 	# Get the user info for the person who wrote this command
 	user = ctx.message.author
 
+	permissions = [
+		'agent commander'
+	]
+
 	# Get the channel this was sent by
 	sender_original = ctx.message.channel.name
 	sender_i = sender_original.rfind('-comms')
@@ -623,6 +648,14 @@ async def agent(ctx, *, input_message: str):
 	correct_fmt_str = 'Correct format is: ```/agent [LOCATION/TARGET] ' 
 	correct_fmt_str += '[1ST SUCCESS CHOICE] [2ND SUCCESS CHOICE] '
 	correct_fmt_str += '[3RD SUCCESS CHOICE] [MISSION]```'
+	# check permissions
+	for permission in permissions:
+		if permission not in [role.name.lower() for role in user.roles]:
+			invalid_permissions = 'Only players with the @Agent Commander tag can use this '
+			invalid_permissions += 'command. Confer with your team and team leader/s, then '
+			invalid_permissions += 'ask @Game Control or @Covert Control for the tag.'
+			await client.say(invalid_permissions)
+			return
 	if (sender_i < 1) or (sender_key.lower() not in team_comms_list): # not in correct channel
 		invalid_channel_error_msg = 'You cannot use this command in this channel.'
 		invalid_channel_error_msg += ' Use this in your "-comms" channel.'
@@ -1560,10 +1593,12 @@ async def alien_comms(ctx, *, input_message: str):
 				not_correct_permission_msg = "Only a person with a @Game Control or "
 				not_correct_permission_msg += "@Alien Control tag can use this command."
 				await client.say(not_correct_permission_msg)
+				return
 		else:
 			not_correct_permission_msg = "Only a person with a @Game Control or "
 			not_correct_permission_msg += "@Alien Control tag can use this command."
 			await client.say(not_correct_permission_msg)
+			return
 
 	# Add or remove the team from the list
 	change = update_open_alien(message)
