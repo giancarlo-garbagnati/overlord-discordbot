@@ -6,44 +6,21 @@ from discord.ext import commands
 import platform
 import random
 
-# Countries and teams in the game (names of servers)
-# List of potential channels to sent messages to and from
-#country_teams = ['usa', 'china', 'russia', 'united-kingdom', 'france', 'india', 'brazil', 
-#				 'japan', 'iran', 'south-africa', 'australia', 'egypt']
-country_teams = ['usa', 'china', 'russia', 'uk', 'france', 'india', 'brazil', 
-				 'japan', 'iran', 'south-africa', 'australia', 'egypt']				 
-#media_teams = ['global-news-network', 'badger-news-corp']
-media_teams = ['gnn', 'bnc']
-un_teams = ['un', 'wtp', 'unhcr']
-void_channel = ['void']
-human_team_list = country_teams + media_teams + un_teams
-#print(human_team_list)
-# the above lists might not be needed
-
-#team_list = ['usa', 'egypt', 'united-kingdom', 'global-news-network', 'bnc', 'south-africa']
 # There's probably a better way to do this...
-team_comms_list = []
 team_comms_dict = dict()
-team_aar_list = []
 team_aar_dict = dict()
-team_disc_list = []
 team_disc_dict = dict()
-control_list = []
 control_dict = dict()
-category_list = []
 category_dict = dict()
 voice_dict = dict()
-dev_list = []
 dev_dict = dict()
-all_list = []
 all_dict = dict()
 public_list = ['role-assignment', 'announcements', 'pre-game-chatter', 'press-releases',
 			   'global-chat', 'general']
 public_dict = dict()
-other_list = []
 other_dict = dict()
 #server_name = "ggtest" # change this to the name of the server you want this bot to work in
-server_name = "Watch The Skies"
+server_name = "Watch The Skies" # Change this to the name of the server
 
 # Phase stuff
 current_phase_i = 0
@@ -233,23 +210,6 @@ async def on_ready():
 
 	print("##############################")
 
-	#print(public_dict)
-	#print(team_disc_dict)
-
-	"""
-	for key, channel in all_dict.items():
-		print('key:', key)
-		print('channel:', channel.name)
-		if "Voice Chat".lower() in channel.name.lower():
-			print('VOICE CHANNEL --- channel type:', channel.type)
-			print('VOICE CHANNEL --- channel type typeof:', type(channel.type))
-			print('VOICE CHANNEL --- channel type = "voice"', channel.type == 'voice')
-			print('VOICE CHANNEL --- discord.ChannelType.voice', channel.type == discord.ChannelType.voice)
-	"""
-	#await client.send_message(dev_dict['dev2-comms'], flag_emoji_dict['unhcr'])
-	#await client.send_message(dev_dict['dev-announcements'], dev_dict['dev-announcements'].mention)
-	#await client.send_message('')
-
 
 # Greeting message upon user joining
 @client.event
@@ -267,8 +227,6 @@ async def on_channel_create(channel):
 	""" When a channel is created, we want to check if it has '-comms'/'-aar'/'-discussion' 
 	in it's name. If so, we update the team_comms_dict 
 	"""
-	#event.channel.send_message('Woah, check out this new channel!')
-	#await client.send_message(channel, 'Woah, check out this new channel!')
 
 	channels_to_update = [
 		'-comms',
@@ -289,7 +247,6 @@ async def on_channel_update(before, after):
 	""" When a channel gets updates, we check to see if the name has been changed to (or from)
 	something with a '-comms'/'-aar'/'-discussion' in it. If so, we update lists
 	"""
-	#await client.send_message(after, 'I sense a disturbance in the force...')
 
 	channels_to_update = [
 		'-comms',
@@ -297,17 +254,11 @@ async def on_channel_update(before, after):
 		'-aar'
 	]
 
-	#print('Topic', after.topic)
-	#print('type', type(after.topic))
-
 	for s in channels_to_update:
 		if (s in before.name.lower()) or (s in after.name.lower()):
 			update_teams(reset=True)
 			print('Teams channels have been updated.')
 			
-	
-	
-
 
 
 
@@ -357,7 +308,6 @@ async def roll(dice : str, mod : int = 0):
 	if mod != 0:
 		result_message += '\nWith modifer, sum = ' + str(roll_sum + mod)
 
-	#result = ', '.join(str(random.randint(1, limit)) for r in range(rolls))
 	await client.say(result_message)
 
 ###################################################################################################
@@ -391,7 +341,6 @@ async def msg(ctx, *, input_message: str):
 	if '-comms' in to_unfmt: # stripping off '-comms' if they included it in the command
 		to_unfmt = to_unfmt[:to_unfmt.rfind('-comms')]
 	to, to_key = name_disambig(to_unfmt) # For accessing the team channel dictionary
-	#to = to_unfmt.title()
 	message = input_message[to_i+1:].strip() # stripping off the remainder for the msg
 
 	# Getting the sending team's name 
@@ -418,8 +367,6 @@ async def msg(ctx, *, input_message: str):
 	alien_destination_allowed = False
 	alien_destination = False
 	if to_key.lower() in team_comms_dict.keys():
-		#print(":", team_comms_dict[to_key.lower()].topic, ":")
-		#if type(team_comms_dict[to_key.lower()].topic) is not NoneType:
 		if team_comms_dict[to_key.lower()].topic != None:
 			#print('not NoneType')
 			if 'alien' in team_comms_dict[to_key.lower()].topic.lower(): # destination is alien -comm
@@ -430,27 +377,12 @@ async def msg(ctx, *, input_message: str):
 	if testing:
 		if disable_msg:
 			if (fro_key.lower() not in ['dev','dev2']) or (to_key.lower() not in ['dev','dev2']):
-				#print("we're here")
 				return
-	
-	# Diagnostic messages
-	"""
-	print('Input message:', input_message)
-	print("To: " + to)
-	print("From: " + fro)
-	print("to_i: " + str(to_i))
-	print('Input message: ' + input_message)
-	"""
-
-	#print(to_key)
 
 	# Error Checking
 	# Not in correct channel (or not from control)
-	if (fro_i < 1) or (fro_key.lower() not in team_comms_list):
+	if (fro_i < 1) or (fro_key.lower() not in team_comms_dict.keys()):
 		if (not from_control) and ():
-			#print(fro_i)
-			#print(fro.lower())
-			#print(team_comms_list)
 			invalid_channel_error_msg = 'You cannot use this command in this channel.'
 			invalid_channel_error_msg += ' Use this in your "-comms" channel.'
 			await client.say(invalid_channel_error_msg)
@@ -471,7 +403,7 @@ async def msg(ctx, *, input_message: str):
 		await client.say(not_valid_msg_format)
 		return
 	# trying to send to invalid team
-	if to_key.lower() not in team_comms_list:
+	if to_key.lower() not in team_comms_dict.keys():
 		not_team_error_msg = '"' + to_original + '"' + ' not a valid team. Try again.'
 		await client.say(not_team_error_msg)
 		return
@@ -533,16 +465,6 @@ async def press_release(ctx, *, input_message: str):
 
 	# Get the user info for the person who wrote this command
 	user = ctx.message.author
-	# https://stackoverflow.com/questions/44893044/how-to-get-users-roles-discord-python
-	#user.roles
-	#print(user)
-	"""
-	if 'head of state' in [role.name.lower() for role in user.roles]:
-		await client.say("Hail to the Chief")
-	else:
-		await client.say("I don't have to listen to you")
-	#print(user.roles)
-	"""
 
 	if testing:
 		if disable_pr:
@@ -550,7 +472,7 @@ async def press_release(ctx, *, input_message: str):
 				return
 
 	# Error Checking
-	if (fro_i < 1) or (fro_key.lower() not in team_comms_list): # not in correct channel
+	if (fro_i < 1) or (fro_key.lower() not in team_comms_dict.keys()): # not in correct channel
 		invalid_channel_error_msg = 'You cannot use this command in this channel.'
 		invalid_channel_error_msg += ' Use this in your "-comms" channel.'
 		await client.say(invalid_channel_error_msg)
@@ -652,9 +574,6 @@ async def agent(ctx, *, input_message: str):
 		choice2 = choice_rank_list[1].title()
 		choice3 = choice_rank_list[2].title()
 	else:
-		#print(choice_rank_list)
-		#print(choices_start_i)
-		#print(input_message)
 		choices_error = True
 
 	# Parse the [LOCATION/TARGET] and [MISSION]
@@ -679,7 +598,7 @@ async def agent(ctx, *, input_message: str):
 			invalid_permissions += 'ask @Game Control or @Covert Control for the tag.'
 			await client.say(invalid_permissions)
 			return
-	if (sender_i < 1) or (sender_key.lower() not in team_comms_list): # not in correct channel
+	if (sender_i < 1) or (sender_key.lower() not in team_comms_dict.keys()): # not in correct channel
 		invalid_channel_error_msg = 'You cannot use this command in this channel.'
 		invalid_channel_error_msg += ' Use this in your "-comms" channel.'
 		await client.say(invalid_channel_error_msg)
@@ -706,15 +625,6 @@ async def agent(ctx, *, input_message: str):
 		mission_missing_error_msg += correct_fmt_str
 		await client.say(mission_missing_error_msg)
 		return
-
-	# Diagnostic messages
-	"""
-	print('target:', target)
-	print('mission:', mission)
-	print('choice1', choice1)
-	print('choice2', choice2)
-	print('choice3', choice3)
-	"""
 
 	# Let's get some of the variables for the final message
 	sender_emoji = get_emoji(sender_key)
@@ -1102,7 +1012,7 @@ def ttc_error_check(user, sender_i, sender_key):
 	]
 
 	# Error Checking
-	if (sender_i < 1) or (sender_key.lower() not in team_comms_list): # not in correct channel
+	if (sender_i < 1) or (sender_key.lower() not in team_comms_dict.keys()): # not in correct channel
 		# aliens can use this command in any channel
 		if 'extraterrestrial organism' not in [role.name.lower() for role in user.roles]:
 			invalid_channel_error_msg = 'You cannot use this command in this channel.'
@@ -1143,37 +1053,6 @@ def ttc_return_msg(user, sender, sender_key, sender_emoji, control_team, input_m
 	ttc_msg += '--------------------------------------------------\n'
 
 	return ttc_msg
-
-
-"""
-TO-DO
-
-DONE
-game
-npc
-covert
-national
-globe
-un
-science
-media
-alien
-
-
-
-{'game': <discord.channel.Channel object at 0x10df2ef48>, 
-'npc': <discord.channel.Channel object at 0x10df334c8>, 
-'globe': <discord.channel.Channel object at 0x10df337c8>, 
-'national': <discord.channel.Channel object at 0x10df38b48>, 
-'un': <discord.channel.Channel object at 0x10df3c9c8>, 
-'alien': <discord.channel.Channel object at 0x10df41248>, 
-'media': <discord.channel.Channel object at 0x10df41648>, 
-'covert': <discord.channel.Channel object at 0x10df41a48>, 
-'science': <discord.channel.Channel object at 0x10df45448>}
-
-"""
-
-
 
 
 
@@ -1270,11 +1149,6 @@ async def psa(ctx, *, input_message: str):
 				not_announcer_error = 'Only an @announcer can use this command.'
 				await client.say(not_announcer_error)
 				return
-			'''
-			not_announcer_error = 'Only an @announcer can use this command.'
-			await client.say(not_announcer_error)
-			return
-			'''
 
 	
 	# Send the message to its destination
@@ -1287,15 +1161,6 @@ async def psa(ctx, *, input_message: str):
 		for key, value in team_disc_dict.items():
 			await client.send_message(value, send_msg)
 		await client.send_message(public_dict['global-chat'], send_msg)
-		#print(len(all_dict.keys()))
-		#i = 0
-		#for key, value in all_dict.items():
-			#print(key, value)
-			#await client.send_message(dev_dict['dev-spam'], str(i))
-			#i += 1
-			#await client.send_message(value, send_msg)
-		#return
-	#await client.send_message(public_dict['press-releases'], send_msg)
 
 	# Logging message for game controllers
 	log_message = 'The following PSA is being sent to all channels by user ' + user.name + ': "'
@@ -1307,13 +1172,6 @@ async def psa(ctx, *, input_message: str):
 	await client.say(confirmation_message)
 
 
-"""
-Command: "/an" | User:: @Game Control
-Function: Post in the announcment channel
-Secondary Function: Post in all Comm's channals message: `New global announcement! (#announcements)
-(edited)
-...and then the same secondary function on the press release option that posts to comms channals New Press Release from [Country Flag]
-"""
 # Command for control to be able to post a message to the Announcements channel, and send a message
 # to all other -comms channels to check announcements
 @client.command(pass_context=True)
@@ -1327,7 +1185,6 @@ async def an(ctx, *, input_message: str):
 	an_role = 'announcer'
 	an_key = 'announcements'
 	an_channel = public_dict[an_key]
-	#announcement_announcement = "New global announcement! (#announcements)"
 	announcement_announcement = "New global announcement! ({})".format(an_channel.mention)
 
 	# Get the user info for the person who wrote this command
@@ -1391,7 +1248,6 @@ async def fakemsg(ctx, *, input_message: str):
 	user = ctx.message.author
 
 	# Let's parse out all the parts of the command
-	#try:
 	sender_i = input_message.find(' ')
 	sender_original = input_message[:sender_i].strip()
 	message = input_message[sender_i+1:].strip()
@@ -1399,18 +1255,6 @@ async def fakemsg(ctx, *, input_message: str):
 	destination_i = message.find(' ')
 	destination_original = message[:destination_i].strip()
 	message = message[destination_i+1:].strip()
-
-	# dev stuff
-	"""
-	print(input_message)
-	print('sender_original:', sender_original)
-	print('sender_i:', sender_i)
-	print('destination_original:', destination_original)
-	print('destintion_i:', destination_i)
-	print('message:', message)
-	#message_list = input_message.split()
-	"""
-	#except:
 
 	# Let's clean up sender and destination
 	sender = sender_original
@@ -1423,32 +1267,6 @@ async def fakemsg(ctx, *, input_message: str):
 	# Now let's disambig the team names
 	sender, sender_key = name_disambig(sender)
 	destination, destination_key = name_disambig(destination)
-
-	"""
-	to_i = input_message.find(' ')
-	to_unfmt = input_message[0:to_i]
-	to_original = to_unfmt # original message for error msgs
-	if '-comms' in to_unfmt: # stripping off '-comms' if they included it in the command
-		to_unfmt = to_unfmt[:to_unfmt.rfind('-comms')]
-	to, to_key = name_disambig(to_unfmt) # For accessing the team channel dictionary
-	#to = to_unfmt.title()
-	message = input_message[to_i+1:].strip() # stripping off the remainder for the msg
-
-	# Getting the sending team's name 
-	fro_original = ctx.message.channel.name
-	fro_i = fro_original.rfind('-comms')
-	fro = fro_original[:fro_i]
-	fro, fro_key = name_disambig(fro)
-	"""
-	
-	# Diagnostic messages
-	"""
-	print('Input message:', input_message)
-	print("To: " + to)
-	print("From: " + fro)
-	print("to_i: " + str(to_i))
-	print('Input message: ' + input_message)
-	"""
 
 	# Error Checking
 	# Check if the user of this commands has one of the correct roles
@@ -1474,11 +1292,11 @@ async def fakemsg(ctx, *, input_message: str):
 		await client.say(not_valid_fakemsg_format)
 		return
 	# trying to send to or from invalid team
-	if sender_key.lower() not in team_comms_list:
+	if sender_key.lower() not in team_comms_dict.keys():
 		not_team_error_msg = '"' + sender_original + '"' + ' not a valid team. Try again.'
 		await client.say(not_team_error_msg)
 		return
-	if destination_key.lower() not in team_comms_list:
+	if destination_key.lower() not in team_comms_dict.keys():
 		not_team_error_msg = '"' + destination_original + '"' + ' not a valid team. Try again.'
 		await client.say(not_team_error_msg)
 		return
@@ -1553,7 +1371,7 @@ async def fakepress_release(ctx, *, input_message: str):
 		await client.say(not_valid_fakemsg_format)
 		return
 	# trying to send to or from invalid team
-	if sender_key.lower() not in team_comms_list:
+	if sender_key.lower() not in team_comms_dict.keys():
 		not_team_error_msg = '"' + sender_original + '"' + ' not a valid team. Try again.'
 		await client.say(not_team_error_msg)
 		return
@@ -1668,21 +1486,11 @@ async def next_phase(ctx):
 	""" Command to let the @Game Control move the game's phase clock forward one phase
 	"""
 
-	# Calling global variables
-	#global current_phase_i
-
 	# The role tag that's allowed to use this command
 	control_role = timekeeper_role
 
 	# Get the user info for the person who wrote this command
 	user = ctx.message.author
-
-	# Dev stuff
-	"""
-	print('current_phase_i:', current_phase_i)
-	print('new phase:', current_phase_i+1)
-	print('max game phases:', len(game_phases)-1)
-	"""
 
 	# Error Checking
 	# Check if the user is has a @Game Control role tag
@@ -1719,26 +1527,19 @@ async def next_phase(ctx):
 		send_msg = game_phase_change + current_phase
 
 	# Send the message to its destination
-	
 	if testing: # if this is True, we'll restrict this command to just message dev channels
 		for key, value in dev_dict.items():
 			if key == 'dev-commandtesting':
 				await client.send_message(value, send_msg)
-			#await client.send_message(value, send_msg)
 	else: # otherwise everyone gets the message
 		for key, value in team_disc_dict.items():
 			await client.send_message(value, send_msg)
 		await client.send_message(public_dict['global-chat'], send_msg)
-	#await client.send_message(public_dict['press-releases'], send_msg)
 
 	# Logging message for game controllers
 	log_message = 'The game has been moved to the next phase by user ' + user.name + '. Phase: "'
 	log_message += current_phase + '".'
 	print(log_message)
-
-	# Confirmation message for the team sending the message
-	#confirmation_message = 'Game moved to phase: "{}".'.format(current_phase)
-	#await client.say(confirmation_message)
 
 
 # Command for the @Game Control to be able to set the game's phase clock to a certain phase number
@@ -1747,9 +1548,6 @@ async def set_phase(ctx, x: int):
 	""" Command to let the @Game Control set the game phase
 	Uses the indices of the game_phrases list
 	"""
-
-	# Calling global variables
-	#global current_phase_i
 
 	# The role tag that's allowed to use this command
 	control_role = timekeeper_role
@@ -1776,7 +1574,6 @@ async def set_phase(ctx, x: int):
 		await client.say(outofrange_error)
 		return
 
-
 	# Set the phase
 	set_current_phase(x)
 
@@ -1788,17 +1585,14 @@ async def set_phase(ctx, x: int):
 		send_msg = game_phase_change + current_phase
 
 	# Send the message to its destination
-	
 	if testing: # if this is True, we'll restrict this command to just message dev channels
 		for key, value in dev_dict.items():
 			if key == 'dev-commandtesting':
 				await client.send_message(value, send_msg)
-			#await client.send_message(value, send_msg)
 	else: # otherwise everyone gets the message
 		for key, value in team_disc_dict.items():
 			await client.send_message(value, send_msg)
 		await client.send_message(public_dict['global-chat'], send_msg)
-	#await client.send_message(public_dict['press-releases'], send_msg)
 
 	# Logging message for game controllers
 	log_message = 'The game has been set by user ' + user.name + ' to phase: "'
@@ -1812,9 +1606,6 @@ async def set_phase(ctx, x: int):
 async def prev_phase(ctx):
 	""" Command to let the @Game Control move the game's phase clock back one phase
 	"""
-
-	# Calling global variables
-	#global current_phase_i
 
 	# The role tag that's allowed to use this command
 	control_role = timekeeper_role
@@ -1854,26 +1645,19 @@ async def prev_phase(ctx):
 		send_msg = game_phase_change + current_phase
 
 	# Send the message to its destination
-	
 	if testing: # if this is True, we'll restrict this command to just message dev channels
 		for key, value in dev_dict.items():
 			if key == 'dev-commandtesting':
 				await client.send_message(value, send_msg)
-			#await client.send_message(value, send_msg)
 	else: # otherwise everyone gets the message
 		for key, value in team_disc_dict.items():
 			await client.send_message(value, send_msg)
 		await client.send_message(public_dict['global-chat'], send_msg)
-	#await client.send_message(public_dict['press-releases'], send_msg)
 
 	# Logging message for game controllers
 	log_message = 'The game has been moved to the previous phase by user ' + user.name
 	log_message += '. Phase: "' + current_phase + '".'
 	print(log_message)
-
-	# Confirmation message for the team sending the message
-	#confirmation_message = 'Game moved to phase: "{}".'.format(current_phase)
-	#await client.say(confirmation_message)
 
 
 # Command for the @Game Control to be able to make the game's phase clock back to the previous 
@@ -1882,9 +1666,6 @@ async def prev_phase(ctx):
 async def last_phase(ctx):
 	""" Command to let the @Game Control move the game's phase clock back one phase
 	"""
-
-	# Calling global variables
-	#global current_phase_i
 
 	# The role tag that's allowed to use this command
 	control_role = timekeeper_role
@@ -1924,35 +1705,26 @@ async def last_phase(ctx):
 		send_msg = game_phase_change + current_phase
 
 	# Send the message to its destination
-	
 	if testing: # if this is True, we'll restrict this command to just message dev channels
 		for key, value in dev_dict.items():
 			if key == 'dev-commandtesting':
 				await client.send_message(value, send_msg)
-			#await client.send_message(value, send_msg)
 	else: # otherwise everyone gets the message
 		for key, value in team_disc_dict.items():
 			await client.send_message(value, send_msg)
 		await client.send_message(public_dict['global-chat'], send_msg)
-	#await client.send_message(public_dict['press-releases'], send_msg)
 
 	# Logging message for game controllers
 	log_message = 'The game has been moved to the previous phase by user ' + user.name
 	log_message += '. Phase: "' + current_phase + '".'
 	print(log_message)
 
-	# Confirmation message for the team sending the message
-	#confirmation_message = 'Game moved to phase: "{}".'.format(current_phase)
-	#await client.say(confirmation_message)
 
 # Command for the @Game Control to be able to reset the game's phase clock to the beginning
 @client.command(pass_context=True)
 async def reset_phase(ctx):
 	""" Command to let the @Game Control reset the game phase to the first phase
 	"""
-
-	# Calling global variables
-	#global current_phase_i
 
 	# The role tag that's allowed to use this command
 	control_role = timekeeper_role
@@ -1993,9 +1765,6 @@ async def end_phase(ctx):
 	""" Command to let the @Game Control set the game phase clock to the end phase
 	"""
 
-	# Calling global variables
-	#global current_phase_i
-
 	# The role tag that's allowed to use this command
 	control_role = timekeeper_role
 
@@ -2026,17 +1795,14 @@ async def end_phase(ctx):
 		send_msg = game_phase_change + current_phase
 
 	# Send the message to its destination
-	
 	if testing: # if this is True, we'll restrict this command to just message dev channels
 		for key, value in dev_dict.items():
 			if key == 'dev-commandtesting':
 				await client.send_message(value, send_msg)
-			#await client.send_message(value, send_msg)
 	else: # otherwise everyone gets the message
 		for key, value in team_disc_dict.items():
 			await client.send_message(value, send_msg)
 		await client.send_message(public_dict['global-chat'], send_msg)
-	#await client.send_message(public_dict['press-releases'], send_msg)
 
 	# Logging message for game controllers
 	log_message = 'The game has been set to the last phase by user ' + user.name + '."'
@@ -2048,9 +1814,6 @@ async def what_phase(ctx):
 	""" Command to let the @Game Control get a reminder what phase the game is in.
 	This will get seen only in the channel the @Game Controller used it in
 	"""
-
-	# Calling global variables
-	#global current_phase_i
 
 	# The role tag that's allowed to use this command
 	control_role = timekeeper_role
@@ -2121,10 +1884,8 @@ async def list_phase(ctx):
 			phase_str = '{} - {}\n'.format(i, phase_s)
 		send_msg += phase_str
 	send_msg += "```"
-	#print(len(send_msg))
 
 	# Send the message to the channel the command was used in
-	#await client.say('test')
 	await client.say(send_msg)
 
 
@@ -2236,61 +1997,34 @@ def update_teams(verbose=False, reset=True):
 				if channel_name in ['development', 'dev-comms', 'dev2-comms', 
 									'dev-commandtesting', 'dev-announcements',
 									'dev-press-releases', 'dev-spam']:
-					dev_list.append(channel_name)
 					dev_dict[channel_name] = channel
 				if channel.type == 4: # catching all the categories
-					category_list.append(channel_name)
 					category_dict[channel_name] = channel
 				elif channel.type == discord.ChannelType.voice: # catching all voice channels
 					voice_dict[channel_name] = channel
 				elif channel_name == 'pre-game-planning':
 					pass
 				else: # all other channels will be added to the all list and dict
-					all_list.append(channel_name)
 					all_dict[channel_name] = channel
 					if control_i > 1: # if this exists, we add it to the control list and dict
-						control_list.append(control_name)
 						control_dict[control_name] = channel
 					 # if this exists, add it to the list and the channel to the dict
 					elif team_name_i > 1:
-						team_comms_list.append(team_name)
 						team_comms_dict[team_name] = channel
 					elif channel_name == 'void': # special case for void channel
-						team_comms_list.append(channel_name)
 						team_comms_dict[channel_name] = channel
 					elif team_aar_i > 1: # if this exists, add it to the aar list and dict
-						team_aar_list.append(team_aar)
 						team_aar_dict[team_aar] = channel
 					elif team_disc_i > 1: # if this exists, add it to the disc list and dict
-						team_disc_list.append(team_disc)
 						team_disc_dict[team_disc] = channel
 					elif channel_name in public_list: # checking if it belongs in the public group
 						public_dict[channel_name] = channel
 					else:
 						if verbose:
 							print('Not in any other category so added to public:', channel_name)
-						other_list.append(channel_name)
 						other_dict[channel_name] = channel
 
-				
-	#Diagnostic Messages
-	"""
-	print("team_comms_list:", team_comms_list)
-	print("team_comms_dict:", team_comms_dict)
-	print("team_comms_list then _dict lens", len(team_comms_list), len(team_comms_dict))
-	print("control_list:", control_list)
-	print("control_dict:", control_dict)
-	print("control_list then _dict lens", len(control_list), len(control_dict))
-	print("public_list:", public_list)
-	print("public_dict:", public_dict)
-	print("public_list then _dict lens", len(public_list), len(public_dict))
-	print("category_list:", category_list)
-	print("category_dict:", category_dict)
-	print("category_list then _dict lens", len(category_list), len(category_dict))
-	print("other_list:", other_list)
-	print("other_dict:", other_dict)
-	print("other_list then _dict lens", len(other_list), len(other_dict))
-	"""
+
 
 # A helper function that goes through all flags and emoji, puts them in one string returns it, 
 # and compares it to all in the -comms list/dict and sends a string of all items in the
@@ -2321,8 +2055,6 @@ def get_emoji(key):
 	""" A helper function to retrieve the emoji string given a key string, if it doesn't exist
 	in the dict, returns a blank string
 	"""
-	#print(key)
-	#print(flag_emoji_dict.keys())
 	if key in flag_emoji_dict.keys():
 		return flag_emoji_dict[key]
 	else:
@@ -2380,7 +2112,7 @@ def update_open_alien(new_open_alien):
 ###################################################################################################
 
 
-# Get key info
+# Get key info and run the bot
 login_path = "local/botkey"
 login_file = open(login_path, 'r')
 login_lines = login_file.readlines()
@@ -2388,51 +2120,3 @@ login_lines = [line.replace('\n', '') for line in login_lines]
 botkey = login_lines[0]
 client.run(botkey)
 
-"""
-
-1) Team to Team comms - Being able to get something posted from a private team channel to another private team channel
-
-1.5) Void msging
-
-3) Press Release - Being able to publish information into a group Public Release Channel
-
-4) Public Information Blast - Information that gets automated into all channels.
-
-6) Greeting message
-
-DONE
-
-2) Team to Controller Channel - Being able to get something posted from a private team channel to hidden controller channel
-
-5) Time-keeping - Phase/turn information that get's automated to all channels.
-
-
-Those were the main things we were aiming to do.
-Basically 2 diffrent functions, but deployed in 5 ways.
-
-"""
-
-"""
-
-To do:
-1.5) Fix UN -comms msg
-1.55) Write-up google docs documentation
-1.7) fakemsg
-2) team to controller channel
-2.5) controller to team channel
-3) time-keeping
-4) dynamically adding new teams
-5)
-5.5) change things to use the flag emoji
-6) look into using @ tags
-
-Done (but testing):
-1) all comms blast
-1.1) blast
-1.2) psa
-1.3) test with @announcer tag
-2) Phases Commands
-
-
-
-"""
